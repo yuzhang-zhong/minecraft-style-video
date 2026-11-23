@@ -1,110 +1,105 @@
-<div align="center">
+# minecraft-style-video
 
-<img src="assets/icon.svg" alt="Minecraft Style Skill" width="128" />
+**English** · [简体中文](README.zh-CN.md) · [繁體中文](docs/i18n/README.zh-TW.md) · [日本語](docs/i18n/README.ja.md) · [한국어](docs/i18n/README.ko.md) · [Español](docs/i18n/README.es.md) · [Français](docs/i18n/README.fr.md) · [Deutsch](docs/i18n/README.de.md) · [Português](docs/i18n/README.pt-BR.md) · [Русский](docs/i18n/README.ru.md)
 
-# Minecraft Style Skill
+Generate Minecraft-style voxel character, mob, and block short videos with locked `8x8x8` and `16x16x16` pixel-grid geometry, 9:16 storyboards, and model-specific prompts.
 
-**简体中文** · [English](README.en.md)
+[Quick start](#quick-start) · [6 video examples](#six-916-short-video-examples) · [Asset library](#classic-minecraft-asset-library) · [CLI tools](#command-line-tools) · [Skill workflow](SKILL.md)
 
-Generate Minecraft-style voxel character, mob, and block short videos with locked 8x8x8/16x16x16 pixel-grid geometry, 9:16 storyboards, and model-specific prompts.
+Generic "Minecraft character" or "Minecraft block" prompts often cause video generators to grow five human fingers on the hands, smudge `16x16` pixel grids into smooth clay, turn pickaxes into round metal rods, or round the head into a Roblox cylinder with Lego claws. `minecraft-style-video` locks canonical Minecraft proportions before writing motion prompts: a sharp `8x8x8` cubic head with a `+0.5px` 3D outer skin shell, an `8x12x4` rectangular prism torso, `4x12x4` (Steve) or `3x12x4` (Alex) arms ending in flat square hands, `16x16x16` nearest-neighbor blocks, `14x14x14` hinged chests, and `16x16x1` extruded pixel tools.
 
-[![Agent Skill](https://img.shields.io/badge/Skill-Codex_%2F_Claude_%2F_Cursor-10b981)](SKILL.md)
-[![Node CLI](https://img.shields.io/badge/CLI-Node.js_Stdlib-0f766e)](#命令行工具)
-[![License](https://img.shields.io/badge/License-MIT-2563eb)](LICENSE)
+![minecraft-style-video five-step workflow](docs/pipeline.svg)
 
-</div>
+## Quick start
 
-直接让视频模型生成「我的世界小人拿钻石镐挖矿」或「搭一座方块小屋」，画面很容易出现四种跑偏：握工具时手部长出五根真人手指、方块表面的 `16×16` 像素格被涂抹成模糊泥塑、钻石镐和钻石剑退化成圆棍金属刀刃，或者脑袋串味成 Roblox 圆桶头与乐高头顶凸粒。
+Clone the repository into your agent's Skills folder (works with Claude Code, Codex, Cursor, and GitHub Copilot):
 
-`minecraft-style-skill` 在写分镜前先把《我的世界》的角色、生物与方块物体几何规则锁死：`8×8×8` 锋利直角立方体头、`+0.5px` 悬浮 3D 外层皮肤（刘海、帽兜、头盔）、`8×12×4` 躯干、末端为 `4×4`（Steve 宽臂）或 `3×4`（Alex 细臂）平头正方形截面的长方体四肢、`16×16×16` 邻近采样像素方块（草方块、发光钻石矿、TNT、工作台）、`14×14×14` 可开合银锁储物箱，以及 `16×16×1` 阶梯锯齿挤出像素道具（钻石镐、钻石剑）。仓库包含 [`SKILL.md`](SKILL.md)、五份参考手册和四个零依赖 Node.js 脚本，可直接输出三视图与方块设定卡、9:16 竖屏分镜、多模型图生视频（I2V）提示词及本地 3D 体素预览短片。
+```bash
+git clone https://github.com/yuzhang-zhong/minecraft-style-video.git ~/.codex/skills/minecraft-style-video
+```
 
-![工作流概览](docs/pipeline.svg)
+Keep `SKILL.md`, `references/`, `scripts/`, and `templates/` together when copying into another host such as `.agents/skills/minecraft-style-video`. All four CLI scripts require Node.js 18+ and use only the standard library; `ffmpeg` is needed only when re-rendering `.gif` and `.mp4` previews locally.
 
-## 渲染样片与体素防跑偏对比
+Invoke `$minecraft-style-video` in your agent:
 
-以下角色三视图、方块与生物设定卡、防串味对比图、9:16 分镜联系表及动态短片（`.gif` 与带音效 `.mp4`）均由本仓库脚本实际渲染并检入仓库。
+```text
+Use $minecraft-style-video to plan a 15-second 9:16 isometric build short where Alex
+snaps a Crafting Table, a hinged Chest, and a glowing Lantern onto a Grass Block cabin
+beside a pink Axolotl. Give me the character & block DNA card, reference prompts, and a 4-shot Kling I2V storyboard.
+```
 
-### 1. 角色三视图与双层像素皮肤设定卡 (`steve_alex_turnaround_sheet.zh.png`)
+Or pass a broken clip description to patch style drift:
 
-在跑多镜头图生视频前，先固定 0° 正面、45° 斜侧、90° 正侧面三视图，锁住 `8×8×8` 立方体头、`+0.5px` 3D 立体刘海层、平头 `4×4` 方手与向前握持的 `16×16×1` 锯齿像素钻石镐：
+```text
+My Kling clip of a Minecraft character holding a diamond sword grew five human fingers and turned the blade into smooth metal.
+Rewrite the first-frame prompt, motion prompt, and negative prompt for that shot.
+```
 
-![角色三视图设定卡](assets/showcase/steve_alex_turnaround_sheet.zh.png)
+## Visual preview and anti-drift check
 
-### 2. 方块物体、挤出像素道具与原版生物设定卡 (`voxel_blocks_and_mobs_sheet.zh.png`)
-
-除人物外，内置规则同时覆盖短视频高频出镜的方块与生物几何：`16×16×16` 草方块与发光钻石矿、`16×16×16` 红白 TNT 与 `14×14×14` 上翻盖银锁储物箱、`16×16×1` 挤出厚度像素钻石镐/剑，以及无手臂四足苦力怕与粉红像素美西螈：
-
-![方块道具与生物设定卡](assets/showcase/voxel_blocks_and_mobs_sheet.zh.png)
-
-### 3. 四类常见跑偏与标准 Minecraft 体素对比 (`drift_rescue_comparison.zh.png`)
-
-直观对比真人五指与立体鼻、贴图糊化与圆棍金属工具、Roblox 圆桶头与乐高钩爪，以及锁定 `8×8×8` / `16×16` 邻近采样像素网格后的标准效果：
-
-![防串味对比图](assets/showcase/drift_rescue_comparison.zh.png)
-
-### 4. 三套 9:16 竖屏短片样例 (`examples/`)
-
-| Case 01 · 挖到钻石秒遇苦力怕 (`Kling`) | Case 02 · 微缩方块木屋建造 (`Seedance`) | Case 03 · 钻石大佬 vs 萌新拍 TNT (`Hailuo`) |
-| :---: | :---: | :---: |
-| <img src="examples/diamond-creeper-ambush/assets/diamond_creeper_ambush.gif" width="230" alt="挖到钻石秒遇苦力怕 GIF" /> | <img src="examples/cozy-lantern-build/assets/cozy_lantern_build.gif" width="230" alt="微缩方块木屋建造 GIF" /> | <img src="examples/pro-builder-vs-noob-tnt/assets/pro_builder_vs_noob_tnt.gif" width="230" alt="钻石大佬 vs 萌新拍 TNT GIF" /> |
-| `steve-wide` · 钻石矿碎裂 + 苦力怕白光膨胀 | `alex-slim` · 工作台/储物箱拼搭 + BSL 灯笼光影 | 双人反差 · 3D 钻石甲大佬 + `16×16×16` TNT 闪烁 |
-| [中文分镜表](examples/diamond-creeper-ambush/assets/storyboard_contact_sheet.zh.png) · [MP4 视频](examples/diamond-creeper-ambush/assets/diamond_creeper_ambush.mp4) · [目录](examples/diamond-creeper-ambush/) | [中文分镜表](examples/cozy-lantern-build/assets/cozy_storyboard_sheet.zh.png) · [MP4 视频](examples/cozy-lantern-build/assets/cozy_lantern_build.mp4) · [目录](examples/cozy-lantern-build/) | [中文分镜表](examples/pro-builder-vs-noob-tnt/assets/tnt_storyboard_sheet.zh.png) · [MP4 视频](examples/pro-builder-vs-noob-tnt/assets/pro_builder_vs_noob_tnt.mp4) · [目录](examples/pro-builder-vs-noob-tnt/) |
+| 3-View Voxel Turnaround (`0° / 45° / 90°`) | Anti-Drift Geometry Check (`× Drift` vs. `✓ Locked`) |
+| :---: | :---: |
+| <img src="assets/showcase/steve_alex_turnaround_sheet.en.png" width="410" alt="Minecraft 3-view character turnaround sheet" /> | <img src="assets/showcase/drift_rescue_comparison.en.png" width="410" alt="Minecraft anti-drift geometry comparison" /> |
 
 <details>
-<summary>展开查看三套案例的中文 4 镜头分镜联系表大图</summary>
+<summary>Expand full-width voxel block, extruded tool, and mob reference sheet</summary>
 
-![Case 01 中文分镜表](examples/diamond-creeper-ambush/assets/storyboard_contact_sheet.zh.png)
-
-![Case 02 中文分镜表](examples/cozy-lantern-build/assets/cozy_storyboard_sheet.zh.png)
-
-![Case 03 中文分镜表](examples/pro-builder-vs-noob-tnt/assets/tnt_storyboard_sheet.zh.png)
+![Minecraft voxel blocks, extruded tools, and mobs sheet](assets/showcase/voxel_blocks_and_mobs_sheet.en.png)
 
 </details>
 
-## 安装与使用
+## Six 9:16 short-video examples
 
-将仓库克隆到本地 Skills 目录（支持 Claude Code、Codex、Cursor 和 GitHub Copilot）：
+Six vertical packages rendered by this repository's local preview pipeline, covering all 6 story templates and 6 target video engines:
+
+| 01 · Diamond Creeper (`Kling`) | 02 · Cozy Lantern Cabin (`Seedance`) | 03 · Pro vs. Noob TNT (`Hailuo`) |
+| :---: | :---: | :---: |
+| <img src="examples/diamond-creeper-ambush/assets/diamond_creeper_ambush.gif" width="165" alt="Diamond Cave Creeper Ambush GIF" /> | <img src="examples/cozy-lantern-build/assets/cozy_lantern_build.gif" width="165" alt="Cozy Lantern Cabin Build GIF" /> | <img src="examples/pro-builder-vs-noob-tnt/assets/pro_builder_vs_noob_tnt.gif" width="165" alt="Pro Builder vs Noob TNT GIF" /> |
+| [Sheet](examples/diamond-creeper-ambush/assets/storyboard_contact_sheet.en.png) · [MP4](examples/diamond-creeper-ambush/assets/diamond_creeper_ambush.mp4) · [Pack](examples/diamond-creeper-ambush/) | [Sheet](examples/cozy-lantern-build/assets/cozy_storyboard_sheet.en.png) · [MP4](examples/cozy-lantern-build/assets/cozy_lantern_build.mp4) · [Pack](examples/cozy-lantern-build/) | [Sheet](examples/pro-builder-vs-noob-tnt/assets/tnt_storyboard_sheet.en.png) · [MP4](examples/pro-builder-vs-noob-tnt/assets/pro_builder_vs_noob_tnt.mp4) · [Pack](examples/pro-builder-vs-noob-tnt/) |
+| **04 · Redstone Piston Chain (`Wan`)** | **05 · Enderman Grass Heist (`Sora`)** | **06 · Rainy Pink Axolotl (`Runway`)** |
+| <img src="examples/redstone-chain-asmr/assets/redstone_chain_asmr.gif" width="165" alt="Redstone Piston Chain ASMR GIF" /> | <img src="examples/enderman-block-heist/assets/enderman_block_heist.gif" width="165" alt="Enderman Grass Block Heist GIF" /> | <img src="examples/axolotl-rainy-shelter/assets/axolotl_rainy_shelter.gif" width="165" alt="Rainy Night Pink Axolotl GIF" /> |
+| [Sheet](examples/redstone-chain-asmr/assets/redstone_storyboard_sheet.en.png) · [MP4](examples/redstone-chain-asmr/assets/redstone_chain_asmr.mp4) · [Pack](examples/redstone-chain-asmr/) | [Sheet](examples/enderman-block-heist/assets/enderman_storyboard_sheet.en.png) · [MP4](examples/enderman-block-heist/assets/enderman_block_heist.mp4) · [Pack](examples/enderman-block-heist/) | [Sheet](examples/axolotl-rainy-shelter/assets/axolotl_storyboard_sheet.en.png) · [MP4](examples/axolotl-rainy-shelter/assets/axolotl_rainy_shelter.mp4) · [Pack](examples/axolotl-rainy-shelter/) |
+
+## Classic Minecraft asset library
+
+Pre-rendered in [`assets/library/catalog.json`](assets/library/catalog.json) and documented in [`references/classic-minecraft-catalog.md`](references/classic-minecraft-catalog.md) ([character lineup](assets/showcase/classic_characters_lineup.en.png) · [block & tool atlas](assets/showcase/classic_objects_atlas.en.png)):
+
+| Classic Steve | Slim Alex | Diamond Knight | Cozy Hoodie | Creeper | Enderman |
+| :---: | :---: | :---: | :---: | :---: | :---: |
+| <img src="assets/library/characters/char_steve.png" width="112" alt="Classic Steve" /> | <img src="assets/library/characters/char_alex.png" width="112" alt="Slim Alex" /> | <img src="assets/library/characters/char_knight.png" width="112" alt="Diamond Knight" /> | <img src="assets/library/characters/char_hoodie.png" width="112" alt="Cozy Hoodie" /> | <img src="assets/library/characters/mob_creeper.png" width="112" alt="Creeper" /> | <img src="assets/library/characters/mob_enderman.png" width="112" alt="Enderman holding Grass Block" /> |
+
+| Grass Block | Diamond Ore | TNT Block | Crafting Table | Hinged Chest | Sticky Piston | Pickaxe | Sword |
+| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| <img src="assets/library/objects/block_grass.png" width="82" alt="Grass Block" /> | <img src="assets/library/objects/block_diamond_ore.png" width="82" alt="Diamond Ore" /> | <img src="assets/library/objects/block_tnt.png" width="82" alt="TNT Block" /> | <img src="assets/library/objects/block_crafting_table.png" width="82" alt="Crafting Table" /> | <img src="assets/library/objects/prop_chest.png" width="82" alt="Hinged Chest" /> | <img src="assets/library/objects/prop_piston.png" width="82" alt="Sticky Piston" /> | <img src="assets/library/objects/item_diamond_pickaxe.png" width="82" alt="Extruded Diamond Pickaxe" /> | <img src="assets/library/objects/item_diamond_sword.png" width="82" alt="Extruded Diamond Sword" /> |
+
+## Command-line tools
+
+- [`scripts/voxel_spec.mjs`](scripts/voxel_spec.mjs): generate a Character, Mob, and Voxel Block DNA card with 3-view turnaround and isometric object prompts.
+- [`scripts/shot_compiler.mjs`](scripts/shot_compiler.mjs): compile 15s or 30s 9:16 storyboards and I2V/T2V prompts for `kling`, `seedance`, `hailuo`, `wan`, `sora`, and `runway`.
+- [`scripts/drift_check.mjs`](scripts/drift_check.mjs): check draft prompts for human fingers, smooth tools, bilinear blur, Roblox/Lego drift, and multi-verb overload, then output a patched prompt.
+- [`scripts/render_preview.mjs`](scripts/render_preview.mjs): render local 3D turnaround sheets, asset library thumbnails, storyboard contact sheets, and `.gif` / `.mp4` animatics.
 
 ```bash
-git clone https://github.com/yuzhang-zhong/minecraft-style-skill.git ~/.codex/skills/minecraft-style-skill
-```
-
-在对话里调用 `$minecraft-style-skill` 生成小人剧场或微缩方块建造短片：
-
-```text
-使用 $minecraft-style-skill 做一个 15 秒的 9:16 竖屏短片，主题是「在桌面搭一座带发光灯笼和粉红美西螈的微缩方块木屋」，
-先用即梦出首帧图再用可灵跑图生视频。请给出角色与方块物体设定卡、三视图提示词和 4 镜头分镜表。
-```
-
-如果生成的视频出现了真人手指、贴图糊化或圆滑铁剑，可以直接把原提示词交由它修补：
-
-```text
-我用可灵跑了一镜「我的世界小人手拿钻石剑砍向苦力怕」，结果手部长出了五根手指，剑也变成了圆滑发光铁剑，帮我重写首帧词、动态词和负向词。
-```
-
-## 命令行工具
-
-四个脚本只使用 Node.js 18+ 标准库，无需安装第三方依赖或配置 API Key：
-
-- `scripts/voxel_spec.mjs` 按 7 种角色与生物预设（Steve、Alex、钻石甲骑士、卫衣小人、苦力怕、末影人、美西螈）、8 种方块道具与 4 种光影风格生成设定卡、三视图提示词与等距方块提示词。
-- `scripts/shot_compiler.mjs` 按 6 套竖屏短片模板、时长和目标模型（`kling`、`seedance`、`hailuo`、`wan`、`sora`、`runway`）编译分镜表与首帧 I2V 提示词。
-- `scripts/drift_check.mjs` 检查草稿提示词里的真人五指、圆棍非像素工具、贴图双线性模糊、Roblox/乐高串味和单镜多动作超载，并输出救场重写版。
-- `scripts/render_preview.mjs` 使用内置多核 3D 邻近像素光线步进渲染器，在本地生成角色三视图、方块与生物设定卡、防串味对比图、中英分镜表及 `.gif` / `.mp4` 样片。
-
-```bash
-node scripts/voxel_spec.mjs --archetype steve-miner --object diamond-ore --held-item diamond-pickaxe --shader bsl-sunlight --name "Steve" --lang zh-en
-node scripts/shot_compiler.mjs --template diamond-creeper-ambush --duration 15 --engine kling --shader rtx-emissive --lang zh-en
-node scripts/drift_check.mjs --prompt "A cute Minecraft boy holding a round metal sword with five fingers mines ore and runs away" --engine kling --mode t2v --lang zh-en
+node scripts/voxel_spec.mjs --archetype steve-miner --object diamond-ore --held-item diamond-pickaxe --shader bsl-sunlight --name "Steve" --lang en
+node scripts/shot_compiler.mjs --template diamond-creeper-ambush --duration 15 --engine kling --shader rtx-emissive --lang en
+node scripts/drift_check.mjs --prompt "A cute Minecraft boy holding a round metal sword with five fingers mines ore and runs away" --engine kling --mode t2v --lang en
 node scripts/validate_skill.mjs
 ```
 
-## 参考文档与边界说明
+## Scope, limits, and references
 
-多镜头短片要防止 `8×8` 像素五官与 `16×16` 方块网格在切镜时糊化变形，建议先生成角色三视图和方块物体设定图，固定各镜首帧后再走图生视频（I2V），并将可灵等模型的创意度控制在 `0.35` 至 `0.45` 之间。单个 4 到 5 秒片段只安排一个核心肢体或方块交互动作，连续复杂剧情请拆成多个分镜。本项目是独立开源提示词、分镜与体素预览工具，与 Mojang Studios 或 Microsoft 无官方关联。
+- **Local preview fixtures vs. cloud video models**: the checked-in `.png`, `.gif`, and `.mp4` files are deterministic local 3D voxel previews rendered by `scripts/render_preview.mjs` to lock composition and verify prompts. Final diffusion video generation requires an external model (Kling, Seedance/Jimeng, Hailuo, Wan, Sora, or Runway).
+- **Consistency and pacing**: generate a 3-view turnaround sheet and static shot keyframes before running First-Frame I2V, keep creativity moderate (`0.35` to `0.45` in Kling) so `16x16` pixel grids stay sharp, and limit each 4 to 5 second clip to one primary action.
+- **Supported languages**: agent responses and CLI `--lang` output support `en`, `zh`, `zh-tw`, `ja`, `ko`, `es`, `fr`, `de`, `pt`, and `ru`.
+- **License and trademark**: MIT ([LICENSE](LICENSE)). Independent open-source toolkit, unaffiliated with Mojang Studios or Microsoft.
 
-- [Skill 工作流与八项体素不变量 (`SKILL.md`)](SKILL.md)
-- [角色像素比例、双层皮肤、方块道具与光影规范 (`references/voxel-geometry-blocks-and-shaders.md`)](references/voxel-geometry-blocks-and-shaders.md)
-- [可灵、即梦、海螺、万相、Sora、Runway 提示词写法 (`references/model-prompt-playbook.md`)](references/model-prompt-playbook.md)
-- [八类跑偏症状诊断与提示词修补示例 (`references/rescue-and-anti-drift.md`)](references/rescue-and-anti-drift.md)
-- [9:16 竖屏节奏、等距微缩机位与原版音效卡点 (`references/short-video-beats-and-audio.md`)](references/short-video-beats-and-audio.md)
-- [六套竖屏短片剧场模板 (`references/viral-archetypes-catalog.md`)](references/viral-archetypes-catalog.md)
+Reference guides:
+
+- [Core workflow and eight voxel invariants (`SKILL.md`)](SKILL.md)
+- [Voxel geometry, blocks, mobs, and shaders (`references/voxel-geometry-blocks-and-shaders.md`)](references/voxel-geometry-blocks-and-shaders.md)
+- [Classic Minecraft character and block catalog (`references/classic-minecraft-catalog.md`)](references/classic-minecraft-catalog.md)
+- [Model prompt playbook (`references/model-prompt-playbook.md`)](references/model-prompt-playbook.md)
+- [Drift diagnosis and prompt patches (`references/rescue-and-anti-drift.md`)](references/rescue-and-anti-drift.md)
+- [9:16 pacing, isometric angles, and audio cues (`references/short-video-beats-and-audio.md`)](references/short-video-beats-and-audio.md)
+- [Six short-video story and build templates (`references/viral-archetypes-catalog.md`)](references/viral-archetypes-catalog.md)
+

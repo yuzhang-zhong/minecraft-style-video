@@ -1,0 +1,64 @@
+<svg width="960" height="200" viewBox="0 0 960 200" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="wf-zh-title wf-zh-desc">
+  <title id="wf-zh-title">minecraft-style-video 工作流</title>
+  <desc id="wf-zh-desc">五步工作流：角色与方块像素锁定、三视图与物体设定图、9:16 竖屏分镜、多模型提示词、防糊化与防串味检查。</desc>
+
+  <rect width="960" height="200" rx="14" fill="#F8FAFC"/>
+  <rect x="1" y="1" width="958" height="198" rx="13" stroke="#E2E8F0" stroke-width="2"/>
+
+  <rect x="20" y="22" width="168" height="156" rx="10" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+  <rect x="34" y="36" width="34" height="22" rx="5" fill="#ECFDF5"/>
+  <text x="42" y="51" fill="#047857" font-family="Segoe UI, Inter, sans-serif" font-size="12" font-weight="700">01</text>
+  <text x="34" y="80" fill="#0F172A" font-family="Segoe UI, Inter, sans-serif" font-size="15" font-weight="700">角色与方块锁定</text>
+  <text x="34" y="100" fill="#475569" font-family="Segoe UI, Inter, sans-serif" font-size="12">Voxel &amp; Block DNA</text>
+  <text x="34" y="122" fill="#64748B" font-family="Segoe UI, Inter, sans-serif" font-size="11.5">8x8x8 头 · 16x16x16 方块</text>
+  <rect x="34" y="140" width="140" height="24" rx="5" fill="#F8FAFC" stroke="#E2E8F0"/>
+  <text x="42" y="156" fill="#0F172A" font-family="Consolas, monospace" font-size="11">voxel_spec.mjs</text>
+
+  <path d="M192 100H206" stroke="#94A3B8" stroke-width="2" stroke-linecap="round"/>
+  <path d="M202 96L207 100L202 104" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <rect x="210" y="22" width="168" height="156" rx="10" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+  <rect x="224" y="36" width="34" height="22" rx="5" fill="#ECFDF5"/>
+  <text x="232" y="51" fill="#047857" font-family="Segoe UI, Inter, sans-serif" font-size="12" font-weight="700">02</text>
+  <text x="224" y="80" fill="#0F172A" font-family="Segoe UI, Inter, sans-serif" font-size="15" font-weight="700">三视图与物体卡</text>
+  <text x="224" y="100" fill="#475569" font-family="Segoe UI, Inter, sans-serif" font-size="12">Turnaround &amp; Props</text>
+  <text x="224" y="122" fill="#64748B" font-family="Segoe UI, Inter, sans-serif" font-size="11.5">0°/45°/90° · 16x16x1 道具</text>
+  <rect x="224" y="140" width="140" height="24" rx="5" fill="#F8FAFC" stroke="#E2E8F0"/>
+  <text x="232" y="156" fill="#0F172A" font-family="Consolas, monospace" font-size="11">render_preview.mjs</text>
+
+  <path d="M382 100H396" stroke="#94A3B8" stroke-width="2" stroke-linecap="round"/>
+  <path d="M392 96L397 100L392 104" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <rect x="400" y="22" width="168" height="156" rx="10" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+  <rect x="414" y="36" width="34" height="22" rx="5" fill="#ECFDF5"/>
+  <text x="422" y="51" fill="#047857" font-family="Segoe UI, Inter, sans-serif" font-size="12" font-weight="700">03</text>
+  <text x="414" y="80" fill="#0F172A" font-family="Segoe UI, Inter, sans-serif" font-size="15" font-weight="700">9:16 竖屏分镜</text>
+  <text x="414" y="100" fill="#475569" font-family="Segoe UI, Inter, sans-serif" font-size="12">9:16 Storyboard</text>
+  <text x="414" y="122" fill="#64748B" font-family="Segoe UI, Inter, sans-serif" font-size="11.5">单镜单动作 · 原版音效</text>
+  <rect x="414" y="140" width="140" height="24" rx="5" fill="#F8FAFC" stroke="#E2E8F0"/>
+  <text x="422" y="156" fill="#0F172A" font-family="Consolas, monospace" font-size="11">shot_compiler.mjs</text>
+
+  <path d="M572 100H586" stroke="#94A3B8" stroke-width="2" stroke-linecap="round"/>
+  <path d="M582 96L587 100L582 104" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <rect x="590" y="22" width="168" height="156" rx="10" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+  <rect x="604" y="36" width="34" height="22" rx="5" fill="#ECFDF5"/>
+  <text x="612" y="51" fill="#047857" font-family="Segoe UI, Inter, sans-serif" font-size="12" font-weight="700">04</text>
+  <text x="604" y="80" fill="#0F172A" font-family="Segoe UI, Inter, sans-serif" font-size="15" font-weight="700">多模型提示词</text>
+  <text x="604" y="100" fill="#475569" font-family="Segoe UI, Inter, sans-serif" font-size="12">Model Prompts</text>
+  <text x="604" y="122" fill="#64748B" font-family="Segoe UI, Inter, sans-serif" font-size="11.5">可灵 / 即梦 / 海螺 / 万相</text>
+  <rect x="604" y="140" width="140" height="24" rx="5" fill="#F8FAFC" stroke="#E2E8F0"/>
+  <text x="612" y="156" fill="#0F172A" font-family="Consolas, monospace" font-size="11">Kling · Seedance</text>
+
+  <path d="M762 100H776" stroke="#94A3B8" stroke-width="2" stroke-linecap="round"/>
+  <path d="M772 96L777 100L772 104" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <rect x="780" y="22" width="160" height="156" rx="10" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="1.5"/>
+  <rect x="794" y="36" width="34" height="22" rx="5" fill="#ECFDF5"/>
+  <text x="802" y="51" fill="#047857" font-family="Segoe UI, Inter, sans-serif" font-size="12" font-weight="700">05</text>
+  <text x="794" y="80" fill="#0F172A" font-family="Segoe UI, Inter, sans-serif" font-size="15" font-weight="700">防糊化与防串味</text>
+  <text x="794" y="100" fill="#475569" font-family="Segoe UI, Inter, sans-serif" font-size="12">Drift Check</text>
+  <text x="794" y="122" fill="#64748B" font-family="Segoe UI, Inter, sans-serif" font-size="11.5">拦截五指 · 圆桶头 · 糊贴图</text>
+  <rect x="794" y="140" width="132" height="24" rx="5" fill="#F8FAFC" stroke="#E2E8F0"/>
+  <text x="802" y="156" fill="#0F172A" font-family="Consolas, monospace" font-size="11">drift_check.mjs</text>
+</svg>

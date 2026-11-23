@@ -95,7 +95,7 @@ foreach ($lang in @("zh", "en")) {
 
   $outFile = if ($lang -eq "zh") { $tInfo.outZh } else { $tInfo.outEn }
   $bmp.Save($outFile, [System.Drawing.Imaging.ImageFormat]::Png)
-  if ($lang -eq "zh") {
+  if ($lang -eq "en") {
     foreach ($defPath in $tInfo.outDefault) {
       $bmp.Save($defPath, [System.Drawing.Imaging.ImageFormat]::Png)
     }
@@ -138,7 +138,7 @@ foreach ($lang in @("zh", "en")) {
 
   $outFile = if ($lang -eq "zh") { $oInfo.outZh } else { $oInfo.outEn }
   $bmp.Save($outFile, [System.Drawing.Imaging.ImageFormat]::Png)
-  if ($lang -eq "zh") {
+  if ($lang -eq "en") {
     $bmp.Save($oInfo.outDefault, [System.Drawing.Imaging.ImageFormat]::Png)
   }
   $g.Dispose()
@@ -179,11 +179,80 @@ foreach ($lang in @("zh", "en")) {
 
   $outFile = if ($lang -eq "zh") { $dInfo.outZh } else { $dInfo.outEn }
   $bmp.Save($outFile, [System.Drawing.Imaging.ImageFormat]::Png)
-  if ($lang -eq "zh") {
+  if ($lang -eq "en") {
     $bmp.Save($dInfo.outDefault, [System.Drawing.Imaging.ImageFormat]::Png)
   }
   $g.Dispose()
   $bmp.Dispose()
+}
+
+# 3b. Classic Minecraft Asset Library Thumbnails + Lineup Sheets (.zh.png and .en.png)
+$libInfo = $manifest.library
+if ($libInfo) {
+  foreach ($c in $libInfo.characters) {
+    Copy-Item -Force (Join-Path $rawDir $c.raw) $c.out
+  }
+  foreach ($o in $libInfo.objects) {
+    Copy-Item -Force (Join-Path $rawDir $o.raw) $o.out
+  }
+
+  foreach ($lang in @("zh", "en")) {
+    $font = if ($lang -eq "zh") { $fLabelZh } else { $fLabelEn }
+
+    # 6-Character Lineup Sheet (1420 x 360)
+    $cbmp = New-Object System.Drawing.Bitmap(1420, 360)
+    $cg = [System.Drawing.Graphics]::FromImage($cbmp)
+    $cg.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::AntiAlias
+    $cg.TextRenderingHint = [System.Drawing.Text.TextRenderingHint]::ClearTypeGridFit
+    $cg.FillRectangle($bBg, 0, 0, 1420, 360)
+
+    for ($i = 0; $i -lt 6; $i++) {
+      $item = $libInfo.characters[$i]
+      $cx = 16 + $i * 232
+      $cy = 16
+      Fill-RoundedRect $cg $bCard $cx $cy 220 328 12
+      Draw-RoundedRect $cg $pCardBorder $cx $cy 220 328 12
+      $img = [System.Drawing.Image]::FromFile((Join-Path $rawDir $item.raw))
+      $cg.DrawImage($img, ($cx + 6), ($cy + 6), 208, 276)
+      $img.Dispose()
+      $lbl = if ($lang -eq "zh") { $item.labelZh } else { $item.labelEn }
+      $lsz = $cg.MeasureString($lbl, $font)
+      $cg.DrawString($lbl, $font, $bDarkText, ($cx + (220 - $lsz.Width) / 2), ($cy + 292))
+    }
+    $cOut = if ($lang -eq "zh") { $libInfo.charSheetZh } else { $libInfo.charSheetEn }
+    $cbmp.Save($cOut, [System.Drawing.Imaging.ImageFormat]::Png)
+    if ($lang -eq "en") { $cbmp.Save($libInfo.charSheetDefault, [System.Drawing.Imaging.ImageFormat]::Png) }
+    $cg.Dispose()
+    $cbmp.Dispose()
+
+    # 8-Object Atlas Sheet (4x2 grid: 1000 x 560)
+    $obmp = New-Object System.Drawing.Bitmap(1000, 560)
+    $og = [System.Drawing.Graphics]::FromImage($obmp)
+    $og.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::AntiAlias
+    $og.TextRenderingHint = [System.Drawing.Text.TextRenderingHint]::ClearTypeGridFit
+    $og.FillRectangle($bBg, 0, 0, 1000, 560)
+
+    for ($i = 0; $i -lt 8; $i++) {
+      $item = $libInfo.objects[$i]
+      $col = $i % 4
+      $row = [Math]::Floor($i / 4)
+      $ox = 16 + $col * 244
+      $oy = 16 + $row * 268
+      Fill-RoundedRect $og $bCard $ox $oy 232 256 12
+      Draw-RoundedRect $og $pCardBorder $ox $oy 232 256 12
+      $img = [System.Drawing.Image]::FromFile((Join-Path $rawDir $item.raw))
+      $og.DrawImage($img, ($ox + 6), ($oy + 6), 220, 210)
+      $img.Dispose()
+      $lbl = if ($lang -eq "zh") { $item.labelZh } else { $item.labelEn }
+      $lsz = $og.MeasureString($lbl, $font)
+      $og.DrawString($lbl, $font, $bDarkText, ($ox + (232 - $lsz.Width) / 2), ($oy + 222))
+    }
+    $oOut = if ($lang -eq "zh") { $libInfo.objSheetZh } else { $libInfo.objSheetEn }
+    $obmp.Save($oOut, [System.Drawing.Imaging.ImageFormat]::Png)
+    if ($lang -eq "en") { $obmp.Save($libInfo.objSheetDefault, [System.Drawing.Imaging.ImageFormat]::Png) }
+    $og.Dispose()
+    $obmp.Dispose()
+  }
 }
 
 # 4. Clean 4-Shot 9:16 Storyboard Contact Sheets (.zh.png and .en.png) + Keyframes + GIF + MP4
@@ -233,7 +302,7 @@ foreach ($case in $manifest.cases) {
 
     $outSheet = if ($lang -eq "zh") { $case.sheetZh } else { $case.sheetEn }
     $bmp.Save($outSheet, [System.Drawing.Imaging.ImageFormat]::Png)
-    if ($lang -eq "zh") {
+    if ($lang -eq "en") {
       $bmp.Save($case.sheetDefault, [System.Drawing.Imaging.ImageFormat]::Png)
     }
     $g.Dispose()

@@ -1,6 +1,6 @@
 {
-  "name": "minecraft-style-skill",
-  "version": "1.2.0",
+  "name": "minecraft-style-video",
+  "version": "1.3.0",
   "description": "Generate Minecraft-style voxel character, mob, and block short videos with locked 8x8x8/16x16x16 pixel-grid geometry, 9:16 storyboards, and model-specific prompts.",
   "author": "yuzhang-zhong",
   "license": "MIT",

@@ -74,10 +74,10 @@ test("drift_check flags human fingers, smooth tools, and multi-verb overload as 
   assert.equal(goodReport.overallStatus, "PASS");
 });
 
-test("validate_skill CLI verifies repository files, versions, and manifests", () => {
+test("validate_skill CLI verifies repository files, versions, relative links, and manifests", () => {
   const out = execFileSync(process.execPath, [path.join(ROOT, "scripts", "validate_skill.mjs")], {
     cwd: ROOT,
     encoding: "utf8"
   });
-  assert.match(out, /minecraft-style-skill v1\.2\.0 package is valid/);
+  assert.match(out, /minecraft-style-video v1\.3\.0 package is valid/);
 });

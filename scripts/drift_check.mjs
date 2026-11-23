@@ -79,10 +79,33 @@ Options:
   --issue <code>     Optional observed failure code: human-fingers | smooth-tools |
                      blurry-texels | roblox-lego-drift | face-morph | noodle-limbs |
                      outfit-drift | overload
-  --lang <mode>      Output language: zh-en | zh | en (default: zh-en)
+  --lang <code>      Output language: en | zh | zh-tw | ja | ko | es | fr | de | pt | ru | zh-en (default: en)
   --json             Output structured JSON
   --help             Show this help message`);
 }
+
+const SUPPORTED_LANGS = new Set(["en", "zh", "zh-tw", "ja", "ko", "es", "fr", "de", "pt", "ru", "zh-en"]);
+
+function normalizeLang(code = "en") {
+  const clean = String(code || "en").toLowerCase().trim();
+  if (clean === "zh-cn") return "zh";
+  if (clean === "pt-br") return "pt";
+  return SUPPORTED_LANGS.has(clean) ? clean : "en";
+}
+
+const DRIFT_HEADERS = {
+  en: "Minecraft Prompt Anti-Drift Report",
+  zh: "Minecraft 提示词防串味体检报告",
+  "zh-tw": "Minecraft 提示詞防串味體檢報告",
+  ja: "Minecraft プロンプト崩れ検査レポート",
+  ko: "Minecraft 프롬프트 왜곡 점검 리포트",
+  es: "Informe Anti-Deriva de Prompt Minecraft",
+  fr: "Rapport Anti-Dérive du Prompt Minecraft",
+  de: "Minecraft-Prompt-Drift-Prüfbericht",
+  pt: "Relatório Anti-Desvio de Prompt Minecraft",
+  ru: "Отчёт проверки промпта Minecraft на искажения",
+  "zh-en": "Minecraft Prompt Anti-Drift Report / 防串味报告"
+};
 
 export function parseArgs(argv) {
   const opts = {
@@ -90,7 +113,7 @@ export function parseArgs(argv) {
     engine: "kling",
     mode: "i2v",
     issue: "",
-    lang: "zh-en",
+    lang: "en",
     json: false,
     help: false
   };
@@ -103,7 +126,7 @@ export function parseArgs(argv) {
     else if (arg === "--engine" && argv[i + 1]) opts.engine = argv[++i].toLowerCase();
     else if (arg === "--mode" && argv[i + 1]) opts.mode = argv[++i].toLowerCase();
     else if (arg === "--issue" && argv[i + 1]) opts.issue = argv[++i].toLowerCase();
-    else if (arg === "--lang" && argv[i + 1]) opts.lang = argv[++i];
+    else if (arg === "--lang" && argv[i + 1]) opts.lang = normalizeLang(argv[++i]);
   }
   return opts;
 }
@@ -322,9 +345,13 @@ export function inspectPrompt(rawOpts = {}) {
   };
 }
 
-function formatReportMarkdown(rep, lang) {
+function formatReportMarkdown(rep, rawLang) {
+  const lang = normalizeLang(rawLang);
+  const useZh = lang === "zh" || lang === "zh-tw" || lang === "zh-en";
+  const useEn = lang !== "zh";
+  const hdr = DRIFT_HEADERS[lang] || DRIFT_HEADERS.en;
   const lines = [];
-  lines.push(`# Minecraft Prompt Anti-Drift Report (${rep.overallStatus})`);
+  lines.push(`# ${hdr} (${rep.overallStatus})`);
   lines.push("");
   lines.push(`- **Engine**: \`${rep.engine}\` · **Mode**: \`${rep.mode.toUpperCase()}\``);
   if (rep.originalPrompt) {
@@ -334,19 +361,19 @@ function formatReportMarkdown(rep, lang) {
   lines.push("| Gate | Status | Diagnosis |");
   lines.push("| --- | :---: | --- |");
   for (const c of rep.checks) {
-    const diag = lang === "en" ? c.reasonEn : lang === "zh" ? c.reasonZh : `${c.reasonZh} (${c.reasonEn})`;
+    const diag = lang === "zh" || lang === "zh-tw" ? c.reasonZh : lang === "zh-en" ? `${c.reasonZh} (${c.reasonEn})` : c.reasonEn;
     lines.push(`| ${c.gate} | **${c.status}** | ${diag} |`);
   }
   lines.push("");
-  if (lang !== "zh") {
-    lines.push("## Rescued Prompt (English)");
+  if (useEn) {
+    lines.push("## Rescued Prompt (EN)");
     lines.push("```text");
     lines.push(rep.rescuedPromptEn);
     lines.push("```");
     lines.push("");
   }
-  if (lang !== "en") {
-    lines.push("## 救场重写提示词 (中文)");
+  if (useZh) {
+    lines.push("## 救场重写提示词 (ZH)");
     lines.push("```text");
     lines.push(rep.rescuedPromptZh);
     lines.push("```");

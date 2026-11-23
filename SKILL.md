@@ -1,14 +1,14 @@
 ---
-name: minecraft-style-skill
+name: minecraft-style-video
 description: |
   Generate Minecraft-style voxel character, mob, and block short videos with locked 8x8x8/16x16x16 pixel-grid geometry, 9:16 storyboards, and model-specific prompts.
   Use when the user wants to generate Minecraft-style character or object videos, voxel block/item/mob shorts, Douyin/Xiaohongshu/TikTok Minecraft skits, isometric voxel builds, Steve/Alex/Creeper/Enderman turnaround sheets, or prompts for Kling (可灵), Seedance/Jimeng (即梦), Hailuo MiniMax (海螺), Wan (通义万相), Sora, or Runway, or when fixing AI video defects such as human fingers, blurry textures, Roblox cylindrical heads, Lego studs/C-claws, smooth metal tools, or rubbery limbs.
 license: MIT
 metadata:
-  version: "1.2.0"
+  version: "1.3.0"
 ---
 
-# Minecraft Style Skill
+# Minecraft Style Video (`minecraft-style-video`)
 
 ## Core Objective / 核心目标
 
@@ -156,5 +156,6 @@ node scripts/render_preview.mjs
 - [`references/rescue-and-anti-drift.md`](references/rescue-and-anti-drift.md): diagnostic matrix and prompt patches for the 8 most common Minecraft AI video generation failures.
 - [`references/short-video-beats-and-audio.md`](references/short-video-beats-and-audio.md): 0 to 3.5s hook patterns, voxel particle physics, camera transitions, Minecraft SFX cues, and caption placement for 9:16 vertical shorts.
 - [`references/viral-archetypes-catalog.md`](references/viral-archetypes-catalog.md): 6 reusable short-video templates covering character skits and isometric block builds.
+- [`references/classic-minecraft-catalog.md`](references/classic-minecraft-catalog.md): Pre-rendered library of 6 iconic characters/mobs (`Steve`, `Alex`, `Diamond Knight`, `Cozy Hoodie`, `Creeper`, `Enderman`) and 8 canonical voxel blocks/tools (`Grass Block`, `Diamond Ore`, `TNT`, `Crafting Table`, `Hinged Chest`, `Sticky Piston`, `Diamond Pickaxe`, `Diamond Sword`).
 - [`templates/`](templates/): blank markdown templates for character/object cards, storyboards, and shot prompts.
-- [`examples/`](examples/): 3 complete checked-in short-video packages (`diamond-creeper-ambush`, `cozy-lantern-build`, `pro-builder-vs-noob-tnt`) with rendered PNG sheets, GIFs, and MP4 videos.
+- [`examples/`](examples/): 6 complete checked-in short-video packages (`diamond-creeper-ambush`, `cozy-lantern-build`, `pro-builder-vs-noob-tnt`, `redstone-chain-asmr`, `enderman-block-heist`, `axolotl-rainy-shelter`) with rendered PNG sheets, GIFs, and MP4 videos.

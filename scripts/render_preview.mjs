@@ -418,6 +418,37 @@ export function evalMinecraftBlockSDF(pWorld, cfg = {}) {
     return { d: dBox * scale, color: shadeTexel(stripe, noise * 0.7), roughness: 0.36, emissive: 0 };
   }
 
+  if (type === "diamond-block") {
+    const isBorder = ux === 0 || ux === 15 || uy === 0 || uy === 15 || uz === 0 || uz === 15;
+    const base = isBorder ? [20, 184, 166] : (ux + uy + uz) % 5 === 0 ? [207, 250, 254] : [74, 237, 217];
+    return { d: dBox * scale, color: shadeTexel(base, noise * 0.4), roughness: 0.14, emissive: 0.28 };
+  }
+
+  if (type === "redstone-lamp") {
+    const isFrame = ux <= 1 || ux >= 14 || uy <= 1 || uy >= 14 || uz <= 1 || uz >= 14;
+    if (isFrame) {
+      return { d: dBox * scale, color: [68, 44, 28], roughness: 0.42, emissive: 0 };
+    }
+    const lit = cfg.lit !== false;
+    const base = lit ? [251, 191, 36] : [120, 72, 38];
+    return { d: dBox * scale, color: shadeTexel(base, noise * 0.5), roughness: 0.2, emissive: lit ? 0.72 : 0 };
+  }
+
+  if (type === "sticky-piston") {
+    const ext = (cfg.extend ?? 0.35) * 0.36;
+    const dBaseP = sdRoundBox(sub3(p, v3(0, -0.09, 0)), v3(0.36, 0.27, 0.36), 0.004);
+    const dRod = sdBox(sub3(p, v3(0, 0.18 + ext * 0.5, 0)), v3(0.09, 0.10 + ext * 0.5, 0.09));
+    const dHeadP = sdRoundBox(sub3(p, v3(0, 0.27 + ext, 0)), v3(0.36, 0.09, 0.36), 0.004);
+    const dMinP = Math.min(dBaseP, dRod, dHeadP);
+    if (dHeadP <= dBaseP && dHeadP <= dRod) {
+      if (p.y > 0.34 + ext && Math.abs(p.x) < 0.22 && Math.abs(p.z) < 0.22) {
+        return { d: dMinP * scale, color: shadeTexel([116, 212, 76], noise * 0.5), roughness: 0.22, emissive: 0.1 };
+      }
+      return { d: dMinP * scale, color: shadeTexel([182, 128, 72], noise * 0.5), roughness: 0.36, emissive: 0 };
+    }
+    return { d: dMinP * scale, color: shadeTexel([104, 114, 128], noise), roughness: 0.45, emissive: 0 };
+  }
+
   // Default: "crafting-table"
   if (isTop) {
     const inGrid = ux >= 2 && ux <= 13 && uz >= 2 && uz <= 13;
@@ -519,6 +550,54 @@ export function evalAxolotlSDF(pWorld, cfg = {}) {
   return { d: dMin, color: col, roughness: 0.34, emissive: 0 };
 }
 
+// ---------- Canonical Tall Enderman Mob Evaluator ----------
+export function evalEndermanSDF(pWorld, cfg = {}) {
+  const { pos = v3(0, 0, 0), yaw = 0, jawOpen = 0, carriesGrass = true } = cfg;
+  const p = rotY(sub3(pWorld, pos), -yaw);
+  const dBound = len3(p) - 1.85;
+  if (dBound > 0.45) return { d: dBound, color: [20, 24, 32], roughness: 0.35, emissive: 0 };
+
+  const pHead = sub3(p, v3(0, 0.72 + jawOpen * 0.08, 0));
+  const dHead = sdRoundBox(pHead, v3(0.18, 0.18, 0.18), 0.004);
+  const dBody = sdRoundBox(sub3(p, v3(0, 0.30, 0)), v3(0.16, 0.24, 0.08), 0.004);
+  const pArmL = rotX(sub3(p, v3(-0.21, 0.50, 0)), carriesGrass ? 0.52 : 0.05);
+  const pArmR = rotX(sub3(p, v3(0.21, 0.50, 0)), carriesGrass ? 0.52 : 0.05);
+  const dArms = Math.min(
+    sdBox(sub3(pArmL, v3(0, -0.34, 0)), v3(0.042, 0.36, 0.042)),
+    sdBox(sub3(pArmR, v3(0, -0.34, 0)), v3(0.042, 0.36, 0.042))
+  );
+  const dLegs = Math.min(
+    sdBox(sub3(p, v3(-0.08, -0.31, 0)), v3(0.044, 0.38, 0.044)),
+    sdBox(sub3(p, v3(0.08, -0.31, 0)), v3(0.044, 0.38, 0.044))
+  );
+
+  let bestD = Math.min(dHead, dBody, dArms, dLegs);
+  let col = [22, 24, 32];
+  let emissive = 0;
+
+  if (dHead <= dBody && dHead <= dArms && pHead.z > 0.165) {
+    const ix = clamp(Math.floor(((pHead.x + 0.18) / 0.36) * 8), 0, 7);
+    const iy = clamp(Math.floor(((pHead.y + 0.18) / 0.36) * 8), 0, 7);
+    if (iy === 3 && (ix === 0 || ix === 1 || ix === 2 || ix === 5 || ix === 6 || ix === 7)) {
+      col = ix === 1 || ix === 6 ? [245, 108, 255] : [217, 70, 239];
+      emissive = 0.88;
+    }
+  }
+
+  if (carriesGrass) {
+    const grass = evalMinecraftBlockSDF(p, {
+      pos: v3(0, 0.05, 0.34),
+      scale: 0.56,
+      type: "grass-block"
+    });
+    if (grass.d < bestD) {
+      return grass;
+    }
+  }
+
+  return { d: bestD, color: col, roughness: 0.32, emissive };
+}
+
 // ---------- Canonical Minecraft Character SDF Evaluator ----------
 export function evalMinecraftAvatarSDF(pWorld, cfg = {}) {
   const {
@@ -563,6 +642,14 @@ export function evalMinecraftAvatarSDF(pWorld, cfg = {}) {
       pants: [20, 184, 166],
       shoes: [45, 55, 72],
       slim: false
+    },
+    hoodie: {
+      skin: [250, 214, 184],
+      hair: [68, 42, 28],
+      tunic: [134, 239, 172], // Pastel Matcha Hoodie
+      pants: [147, 197, 253], // Washed Denim
+      shoes: [248, 250, 252],
+      slim: true
     }
   };
 
@@ -673,6 +760,14 @@ export function evalMinecraftAvatarSDF(pWorld, cfg = {}) {
       const hz = Math.floor((pHead.z + 1.0) / 0.045);
       const n = (texHash(hx, hy, hz) - 0.5) * 18;
       addPart(dHair3D, shadeTexel(pal.hair, n), theme === "knight" ? 0.16 : 0.38);
+    }
+
+    if (theme === "hoodie") {
+      // White 3D voxel headphones over ears
+      const dCupL = sdBox(sub3(pHead, v3(-0.205, 0.01, 0.02)), v3(0.028, 0.075, 0.065));
+      const dCupR = sdBox(sub3(pHead, v3(0.205, 0.01, 0.02)), v3(0.028, 0.075, 0.065));
+      const dBand = sdBox(sub3(pHead, v3(0, 0.215, 0.02)), v3(0.21, 0.02, 0.04));
+      addPart(Math.min(dCupL, dCupR, dBand), [248, 250, 252], 0.2);
     }
   }
 
@@ -1457,6 +1552,400 @@ export function buildProVsNoobTntScene(shotIndex, phase = 0.5) {
   };
 }
 
+// Case 04: Redstone & Sticky Piston Chain ASMR (`Wan`)
+export function buildRedstoneChainScene(shotIndex, phase = 0.5) {
+  const darkTop = [22, 30, 46];
+  const darkBot = [42, 54, 76];
+
+  if (shotIndex === 0) {
+    // Shot 1: Alex flipping lever / igniting glowing crimson redstone trail
+    return {
+      cam: {
+        ro: v3(0.18, 0.42, 2.58),
+        ta: v3(0, 0.02, 0),
+        fov: 1.92,
+        bgTop: darkTop,
+        bgBot: darkBot,
+        floorY: -0.68,
+        floorType: "stone"
+      },
+      sceneFn: (p) => {
+        const av = evalMinecraftAvatarSDF(p, {
+          pos: v3(-0.36, 0, -0.04),
+          yaw: 0.42,
+          armRPitch: -0.82,
+          expression: "smile",
+          theme: "alex",
+          heldItem: "none"
+        });
+        const piston = evalMinecraftBlockSDF(p, {
+          pos: v3(0.34, -0.32, 0.08),
+          yaw: -0.25,
+          scale: 0.88,
+          type: "sticky-piston",
+          extend: 0.05
+        });
+        const dDust = sdBox(sub3(p, v3(0.0, -0.66, 0.22)), v3(0.32, 0.018, 0.045));
+        let best = av.d < piston.d ? av : piston;
+        if (dDust < best.d) best = { d: dDust, color: [239, 68, 68], roughness: 0.12, emissive: 0.85 };
+        return best;
+      }
+    };
+  }
+
+  if (shotIndex === 1) {
+    // Shot 2: Sticky piston extends its slime head, snapping a glowing Diamond Block upward
+    const ext = smoothstep(0.1, 0.8, phase) * 0.65;
+    return {
+      cam: {
+        ro: v3(0.35, 0.48, 2.55),
+        ta: v3(0.05, 0.06, 0),
+        fov: 1.92,
+        bgTop: darkTop,
+        bgBot: darkBot,
+        floorY: -0.68,
+        floorType: "stone"
+      },
+      sceneFn: (p) => {
+        const av = evalMinecraftAvatarSDF(p, {
+          pos: v3(-0.42, 0, -0.06),
+          yaw: 0.45,
+          armRPitch: -0.55,
+          expression: "smile",
+          theme: "alex",
+          heldItem: "none"
+        });
+        const piston = evalMinecraftBlockSDF(p, {
+          pos: v3(0.28, -0.36, 0.08),
+          yaw: -0.25,
+          scale: 0.84,
+          type: "sticky-piston",
+          extend: ext
+        });
+        const dBlock = evalMinecraftBlockSDF(p, {
+          pos: v3(0.28, 0.24 + ext * 0.28, 0.08),
+          yaw: -0.25,
+          scale: 0.72,
+          type: "diamond-block"
+        });
+        let best = av.d < piston.d ? av : piston;
+        if (dBlock.d < best.d) best = dBlock;
+        return best;
+      }
+    };
+  }
+
+  if (shotIndex === 2) {
+    // Shot 3: Redstone Lamps cascade open in warm amber glow
+    return {
+      cam: {
+        ro: v3(-0.15, 0.38, 2.62),
+        ta: v3(0, 0.08, 0),
+        fov: 1.92,
+        bgTop: [45, 38, 68],
+        bgBot: [92, 64, 48],
+        floorY: -0.68,
+        floorType: "stone",
+        warmLight: 0.55
+      },
+      sceneFn: (p) => {
+        const av = evalMinecraftAvatarSDF(p, {
+          pos: v3(-0.38, 0, 0),
+          yaw: 0.35,
+          armRPitch: -0.75,
+          expression: "happy",
+          theme: "alex",
+          heldItem: "none"
+        });
+        const lamp1 = evalMinecraftBlockSDF(p, { pos: v3(0.26, -0.32, 0.06), yaw: -0.2, scale: 0.82, type: "redstone-lamp", lit: true });
+        const lamp2 = evalMinecraftBlockSDF(p, { pos: v3(0.26, 0.28, 0.06), yaw: -0.2, scale: 0.82, type: "redstone-lamp", lit: phase > 0.3 });
+        let best = av.d < lamp1.d ? av : lamp1;
+        if (lamp2.d < best.d) best = lamp2;
+        return best;
+      }
+    };
+  }
+
+  // Shot 4: Diamond Block pedestal & glowing Lantern completion loop
+  return {
+    cam: {
+      ro: v3(0.18, 0.40, 2.58),
+      ta: v3(0, 0.06, 0),
+      fov: 1.92,
+      bgTop: darkTop,
+      bgBot: [56, 72, 98],
+      floorY: -0.68,
+      floorType: "stone",
+      warmLight: 0.35
+    },
+    sceneFn: (p) => {
+      const av = evalMinecraftAvatarSDF(p, {
+        pos: v3(-0.36, 0, 0),
+        yaw: 0.3,
+        armRPitch: -0.95,
+        expression: "happy",
+        theme: "alex",
+        heldItem: "lantern"
+      });
+      const ped = evalMinecraftBlockSDF(p, { pos: v3(0.32, -0.32, 0.08), yaw: -0.3, scale: 0.86, type: "diamond-block" });
+      return av.d < ped.d ? av : ped;
+    }
+  };
+}
+
+// Case 05: Enderman Midnight Grass Block Heist (`Sora`)
+export function buildEndermanHeistScene(shotIndex, phase = 0.5) {
+  const nightTop = [17, 24, 39];
+  const nightBot = [49, 46, 129];
+
+  if (shotIndex === 0) {
+    // Shot 1: Steve on lawn while tall Enderman with glowing purple eyes appears behind him
+    return {
+      cam: {
+        ro: v3(0, 0.34, 2.82),
+        ta: v3(0, 0.12, 0),
+        fov: 1.92,
+        bgTop: nightTop,
+        bgBot: nightBot,
+        floorY: -0.68,
+        floorType: "grass"
+      },
+      sceneFn: (p) => {
+        const st = evalMinecraftAvatarSDF(p, {
+          pos: v3(-0.36, 0, 0.06),
+          yaw: 0.22,
+          armRPitch: -0.35,
+          expression: "smile",
+          theme: "steve",
+          heldItem: "none"
+        });
+        const en = evalEndermanSDF(p, {
+          pos: v3(0.36, 0.0, -0.06),
+          yaw: -0.28,
+          carriesGrass: false
+        });
+        return st.d < en.d ? st : en;
+      }
+    };
+  }
+
+  if (shotIndex === 1) {
+    // Shot 2: Enderman plucks a 16x16x16 Grass Block up in its thin stick arms
+    return {
+      cam: {
+        ro: v3(0.08, 0.36, 2.82),
+        ta: v3(0, 0.10, 0),
+        fov: 1.92,
+        bgTop: nightTop,
+        bgBot: nightBot,
+        floorY: -0.68,
+        floorType: "grass"
+      },
+      sceneFn: (p) => {
+        const st = evalMinecraftAvatarSDF(p, {
+          pos: v3(-0.40, 0, 0.04),
+          yaw: 0.42,
+          armRPitch: -0.65,
+          expression: "shocked",
+          theme: "steve",
+          heldItem: "none"
+        });
+        const en = evalEndermanSDF(p, {
+          pos: v3(0.34, 0.0, 0.04),
+          yaw: -0.35,
+          carriesGrass: true
+        });
+        return st.d < en.d ? st : en;
+      }
+    };
+  }
+
+  if (shotIndex === 2) {
+    // Shot 3: Eye contact! Enderman vibrates & opens cubic jaw while clutching the Grass Block
+    const shake = Math.sin(phase * Math.PI * 8) * 0.03;
+    return {
+      cam: {
+        ro: v3(0.0, 0.32, 2.75),
+        ta: v3(0.04, 0.16, 0),
+        fov: 1.92,
+        bgTop: [46, 16, 101],
+        bgBot: [88, 28, 135],
+        floorY: -0.68,
+        floorType: "grass"
+      },
+      sceneFn: (p) => {
+        const st = evalMinecraftAvatarSDF(p, {
+          pos: v3(-0.40, 0, 0.06),
+          yaw: 0.38,
+          armLPitch: -2.1,
+          armRPitch: -2.1,
+          expression: "panic",
+          theme: "steve",
+          heldItem: "none"
+        });
+        const en = evalEndermanSDF(p, {
+          pos: v3(0.32 + shake, 0.0, 0.04),
+          yaw: -0.32,
+          jawOpen: 0.75,
+          carriesGrass: true
+        });
+        return st.d < en.d ? st : en;
+      }
+    };
+  }
+
+  // Shot 4: Purple portal cubes pop as Enderman teleports onto oak block holding Grass Block
+  return {
+    cam: {
+      ro: v3(0, 0.42, 2.88),
+      ta: v3(0, 0.14, 0),
+      fov: 1.92,
+      bgTop: nightTop,
+      bgBot: nightBot,
+      floorY: -0.68,
+      floorType: "oak"
+    },
+    sceneFn: (p) => {
+      const st = evalMinecraftAvatarSDF(p, {
+        pos: v3(-0.38, 0, 0.06),
+        yaw: 0.18,
+        expression: "deadpan",
+        theme: "steve",
+        heldItem: "none"
+      });
+      const en = evalEndermanSDF(p, {
+        pos: v3(0.34, 0.12, -0.04),
+        yaw: -0.25,
+        carriesGrass: true
+      });
+      const dPart = sdBox(sub3(p, v3(0.05, 0.35 + phase * 0.15, 0.22)), v3(0.045, 0.045, 0.045));
+      let best = st.d < en.d ? st : en;
+      if (dPart < best.d) best = { d: dPart, color: [217, 70, 239], roughness: 0.1, emissive: 0.9 };
+      return best;
+    }
+  };
+}
+
+// Case 06: Rainy Night Pink Voxel Axolotl Shelter (`Runway`)
+export function buildAxolotlShelterScene(shotIndex, phase = 0.5) {
+  const rainTop = [30, 58, 138];
+  const rainBot = [96, 165, 250];
+  const cozyTop = [67, 20, 7];
+  const cozyBot = [251, 146, 60];
+
+  if (shotIndex === 0) {
+    // Shot 1: Pink Voxel Axolotl in blue pixel rain
+    return {
+      cam: {
+        ro: v3(0.15, 0.12, 2.15),
+        ta: v3(0, -0.35, 0),
+        fov: 1.92,
+        bgTop: rainTop,
+        bgBot: rainBot,
+        floorY: -0.68,
+        floorType: "stone"
+      },
+      sceneFn: (p) => {
+        const ax = evalAxolotlSDF(p, { pos: v3(0.0, -0.52, 0.08), yaw: 0.38 });
+        const dRain1 = sdBox(sub3(p, v3(-0.28, -0.05 - phase * 0.25, 0.12)), v3(0.014, 0.08, 0.014));
+        const dRain2 = sdBox(sub3(p, v3(0.28, 0.12 - phase * 0.25, -0.05)), v3(0.014, 0.08, 0.014));
+        const dRain = Math.min(dRain1, dRain2);
+        if (dRain < ax.d) return { d: dRain, color: [147, 197, 253], roughness: 0.1, emissive: 0.45 };
+        return ax;
+      }
+    };
+  }
+
+  if (shotIndex === 1) {
+    // Shot 2: Pastel 3D-Hoodie avatar lowers warm glowing Lantern beside the Axolotl
+    return {
+      cam: {
+        ro: v3(0.22, 0.30, 2.55),
+        ta: v3(0, 0.0, 0),
+        fov: 1.92,
+        bgTop: rainTop,
+        bgBot: [147, 197, 253],
+        floorY: -0.68,
+        floorType: "stone",
+        warmLight: 0.35
+      },
+      sceneFn: (p) => {
+        const av = evalMinecraftAvatarSDF(p, {
+          pos: v3(-0.32, 0, 0),
+          yaw: 0.38,
+          waistPitch: 0.22,
+          armRPitch: -0.95,
+          expression: "smile",
+          theme: "hoodie",
+          heldItem: "lantern"
+        });
+        const ax = evalAxolotlSDF(p, { pos: v3(0.32, -0.54, 0.16), yaw: -0.45 });
+        return av.d < ax.d ? av : ax;
+      }
+    };
+  }
+
+  if (shotIndex === 2) {
+    // Shot 3: Warm oak cabin with glowing Redstone Lamp & happy Axolotl
+    return {
+      cam: {
+        ro: v3(-0.18, 0.34, 2.52),
+        ta: v3(0, 0.04, 0),
+        fov: 1.92,
+        bgTop: cozyTop,
+        bgBot: cozyBot,
+        floorY: -0.68,
+        floorType: "oak",
+        warmLight: 0.65
+      },
+      sceneFn: (p) => {
+        const av = evalMinecraftAvatarSDF(p, {
+          pos: v3(-0.34, 0, -0.04),
+          yaw: 0.35,
+          armRPitch: -0.65,
+          expression: "happy",
+          theme: "hoodie",
+          heldItem: "none"
+        });
+        const ax = evalAxolotlSDF(p, { pos: v3(0.30, -0.54, 0.18), yaw: -0.42 });
+        const lamp = evalMinecraftBlockSDF(p, { pos: v3(0.36, -0.32, -0.22), yaw: -0.2, scale: 0.78, type: "redstone-lamp", lit: true });
+        let best = av.d < ax.d ? av : ax;
+        if (lamp.d < best.d) best = lamp;
+        return best;
+      }
+    };
+  }
+
+  // Shot 4: Cozy loop with floating heart particle above the Pink Axolotl
+  return {
+    cam: {
+      ro: v3(0.28, 0.38, 2.55),
+      ta: v3(0, 0.04, 0),
+      fov: 1.92,
+      bgTop: cozyTop,
+      bgBot: cozyBot,
+      floorY: -0.68,
+      floorType: "oak",
+      warmLight: 0.65
+    },
+    sceneFn: (p) => {
+      const av = evalMinecraftAvatarSDF(p, {
+        pos: v3(-0.30, 0, 0),
+        yaw: 0.32,
+        armRPitch: -0.75,
+        expression: "happy",
+        theme: "hoodie",
+        heldItem: "lantern"
+      });
+      const ax = evalAxolotlSDF(p, { pos: v3(0.30, -0.54, 0.16), yaw: -0.42 });
+      const dHeart = sdBox(sub3(p, v3(0.30, -0.14 + phase * 0.12, 0.16)), v3(0.055, 0.055, 0.02));
+      let best = av.d < ax.d ? av : ax;
+      if (dHeart < best.d) best = { d: dHeart, color: [244, 63, 94], roughness: 0.15, emissive: 0.55 };
+      return best;
+    }
+  };
+}
+
 export function buildRenderTasks() {
   const studioCam = {
     ro: v3(0, 0.20, 2.48),
@@ -1614,11 +2103,43 @@ export function buildRenderTasks() {
     });
   }
 
-  // 4. Keyframes & 24-frame animation loops for the 3 cases
+  // 4. Classic Minecraft Asset Library Thumbnails (6 Characters/Mobs + 8 Voxel Blocks/Items)
+  const libCharCam = { ...studioCam, ro: v3(0, 0.22, 2.45), ta: v3(0, 0.06, 0) };
+  const charPresets = [
+    ["lib_char_steve.png", (p) => evalMinecraftAvatarSDF(p, { yaw: 0.38, armRPitch: -0.68, theme: "steve", heldItem: "pickaxe" })],
+    ["lib_char_alex.png", (p) => evalMinecraftAvatarSDF(p, { yaw: -0.38, armRPitch: -0.78, theme: "alex", heldItem: "lantern" })],
+    ["lib_char_knight.png", (p) => evalMinecraftAvatarSDF(p, { yaw: 0.38, armRPitch: -0.68, theme: "knight", heldItem: "sword" })],
+    ["lib_char_hoodie.png", (p) => evalMinecraftAvatarSDF(p, { yaw: -0.36, armRPitch: -0.55, theme: "hoodie", expression: "happy", heldItem: "none" })],
+    ["lib_mob_creeper.png", (p) => evalCreeperSDF(p, { pos: v3(0, -0.25, 0), yaw: 0.38 })],
+    ["lib_mob_enderman.png", (p) => evalEndermanSDF(p, { pos: v3(0, -0.02, 0), yaw: -0.35, carriesGrass: true })]
+  ];
+  for (const [fname, fn] of charPresets) {
+    tasks.push({ name: fname, w: 240, h: 300, run: () => render3DViewport(240, 300, fn, libCharCam) });
+  }
+
+  const singleObjCam = { ...objCam, ro: v3(0, 0.28, 1.82), ta: v3(0, -0.24, 0) };
+  const objPresets = [
+    ["lib_obj_grass.png", (p) => evalMinecraftBlockSDF(p, { pos: v3(0, -0.32, 0), yaw: 0.58, scale: 0.95, type: "grass-block" })],
+    ["lib_obj_diamond_ore.png", (p) => evalMinecraftBlockSDF(p, { pos: v3(0, -0.32, 0), yaw: -0.52, scale: 0.95, type: "diamond-ore" })],
+    ["lib_obj_tnt.png", (p) => evalMinecraftBlockSDF(p, { pos: v3(0, -0.32, 0), yaw: 0.52, scale: 0.95, type: "tnt-block" })],
+    ["lib_obj_crafting_table.png", (p) => evalMinecraftBlockSDF(p, { pos: v3(0, -0.32, 0), yaw: -0.52, scale: 0.95, type: "crafting-table" })],
+    ["lib_obj_chest.png", (p) => evalMinecraftBlockSDF(p, { pos: v3(0, -0.36, 0), yaw: -0.45, scale: 1.0, type: "chest-hinged", lidAngle: 0.52 })],
+    ["lib_obj_piston.png", (p) => evalMinecraftBlockSDF(p, { pos: v3(0, -0.34, 0), yaw: 0.52, scale: 0.92, type: "sticky-piston", extend: 0.45 })],
+    ["lib_obj_pickaxe.png", (p) => { const sp = evalVoxelSprite16x16(rotY(rotZ(sub3(p, v3(0, -0.18, 0.05)), 0.12), 0.28), PICKAXE_SPRITE_16, 0.042, 0.028); return { ...sp, emissive: 0.15 }; }],
+    ["lib_obj_sword.png", (p) => { const sp = evalVoxelSprite16x16(rotY(rotZ(sub3(p, v3(0, -0.18, 0.05)), -0.12), -0.28), SWORD_SPRITE_16, 0.042, 0.028); return { ...sp, emissive: 0.15 }; }]
+  ];
+  for (const [fname, fn] of objPresets) {
+    tasks.push({ name: fname, w: 220, h: 220, run: () => render3DViewport(220, 220, fn, singleObjCam) });
+  }
+
+  // 5. Keyframes & 24-frame animation loops for all 6 cases
   const suites = [
     ["creeper", buildDiamondCreeperScene],
     ["cozy", buildCozyLanternScene],
-    ["tnt", buildProVsNoobTntScene]
+    ["tnt", buildProVsNoobTntScene],
+    ["redstone", buildRedstoneChainScene],
+    ["enderman", buildEndermanHeistScene],
+    ["axolotl", buildAxolotlShelterScene]
   ];
 
   for (const [prefix, builder] of suites) {
@@ -1692,10 +2213,16 @@ export async function renderRawPanelSetParallel(tmpDir, force = false) {
 
 export function buildBoardsManifest(rawDir) {
   const showcaseDir = path.join(ROOT, "assets", "showcase");
+  const libCharDir = path.join(ROOT, "assets", "library", "characters");
+  const libObjDir = path.join(ROOT, "assets", "library", "objects");
   const creeperDir = path.join(ROOT, "examples", "diamond-creeper-ambush", "assets");
   const cozyDir = path.join(ROOT, "examples", "cozy-lantern-build", "assets");
   const tntDir = path.join(ROOT, "examples", "pro-builder-vs-noob-tnt", "assets");
-  for (const d of [showcaseDir, creeperDir, cozyDir, tntDir]) {
+  const redstoneDir = path.join(ROOT, "examples", "redstone-chain-asmr", "assets");
+  const endermanDir = path.join(ROOT, "examples", "enderman-block-heist", "assets");
+  const axolotlDir = path.join(ROOT, "examples", "axolotl-rainy-shelter", "assets");
+
+  for (const d of [showcaseDir, libCharDir, libObjDir, creeperDir, cozyDir, tntDir, redstoneDir, endermanDir, axolotlDir]) {
     fs.mkdirSync(d, { recursive: true });
   }
 
@@ -1710,9 +2237,9 @@ export function buildBoardsManifest(rawDir) {
         path.join(creeperDir, "steve_alex_turnaround_sheet.png")
       ],
       views: [
-        { file: "turn_front.png", labelZh: "正面 0° (8x8x8立方头 + 4x4平头手)", labelEn: "Front 0° (8x8x8 Head + 4x4 Square Hands)" },
-        { file: "turn_3q.png", labelZh: "斜侧 45° (+0.5px 3D刘海 + 16x16x1钻石镐)", labelEn: "3/4 View 45° (+0.5px Hair + 16x16x1 Pickaxe)" },
-        { file: "turn_side.png", labelZh: "侧面 90° (零3D鼻凸起 + 16x16像素网格)", labelEn: "Profile 90° (Zero 3D Nose + 16x16 Grid)" }
+        { file: "turn_front.png", labelZh: "正面 0°", labelEn: "Front 0°" },
+        { file: "turn_3q.png", labelZh: "斜侧 45°", labelEn: "3/4 View 45°" },
+        { file: "turn_side.png", labelZh: "侧面 90°", labelEn: "Profile 90°" }
       ]
     },
     objects: {
@@ -1720,10 +2247,10 @@ export function buildBoardsManifest(rawDir) {
       outEn: path.join(showcaseDir, "voxel_blocks_and_mobs_sheet.en.png"),
       outDefault: path.join(showcaseDir, "voxel_blocks_and_mobs_sheet.png"),
       panels: [
-        { file: "obj_1_ore_grass.png", labelZh: "16x16x16 草方块 & 钻石矿", labelEn: "16x16x16 Grass & Diamond Ore", r: 16, g: 185, b: 129 },
-        { file: "obj_2_tnt_chest.png", labelZh: "16x16x16 TNT & 14x14x14 储物箱", labelEn: "16x16x16 TNT & 14x14x14 Chest", r: 245, g: 158, b: 11 },
-        { file: "obj_3_extruded_tools.png", labelZh: "16x16x1 挤出像素钻石镐 & 剑", labelEn: "16x16x1 Extruded Pickaxe & Sword", r: 14, g: 165, b: 233 },
-        { file: "obj_4_creeper_axolotl.png", labelZh: "四足苦力怕 & 粉红美西螈", labelEn: "Quadruped Creeper & Pink Axolotl", r: 168, g: 85, b: 247 }
+        { file: "obj_1_ore_grass.png", labelZh: "草方块 & 钻石矿", labelEn: "Grass & Diamond Ore", r: 16, g: 185, b: 129 },
+        { file: "obj_2_tnt_chest.png", labelZh: "TNT & 储物箱", labelEn: "TNT & Hinged Chest", r: 245, g: 158, b: 11 },
+        { file: "obj_3_extruded_tools.png", labelZh: "挤出像素镐 & 剑", labelEn: "16x16x1 Pickaxe & Sword", r: 14, g: 165, b: 233 },
+        { file: "obj_4_creeper_axolotl.png", labelZh: "苦力怕 & 美西螈", labelEn: "Creeper & Pink Axolotl", r: 168, g: 85, b: 247 }
       ]
     },
     drift: {
@@ -1731,10 +2258,36 @@ export function buildBoardsManifest(rawDir) {
       outEn: path.join(showcaseDir, "drift_rescue_comparison.en.png"),
       outDefault: path.join(showcaseDir, "drift_rescue_comparison.png"),
       panels: [
-        { file: "drift_1_fingers.png", labelZh: "× 真人手指 / 3D鼻子", labelEn: "× Human Fingers / 3D Nose", r: 225, g: 29, b: 72 },
-        { file: "drift_2_blurry.png", labelZh: "× 贴图糊化 / 圆棍工具", labelEn: "× Blurry Texels / Round Rod", r: 217, g: 119, b: 6 },
-        { file: "drift_3_roblox_lego.png", labelZh: "× Roblox圆头 / 乐高C爪", labelEn: "× Roblox Head / Lego Claw", r: 124, g: 58, b: 237 },
-        { file: "drift_4_locked.png", labelZh: "✓ 标准 Minecraft 像素几何", labelEn: "✓ Canonical Minecraft Voxel", r: 5, g: 150, b: 105 }
+        { file: "drift_1_fingers.png", labelZh: "× 真人手指 / 鼻子", labelEn: "× Human Fingers / Nose", r: 225, g: 29, b: 72 },
+        { file: "drift_2_blurry.png", labelZh: "× 贴图糊化 / 圆棍", labelEn: "× Blurry / Round Rod", r: 217, g: 119, b: 6 },
+        { file: "drift_3_roblox_lego.png", labelZh: "× 圆桶头 / 乐高爪", labelEn: "× Cylinder / Lego Claw", r: 124, g: 58, b: 237 },
+        { file: "drift_4_locked.png", labelZh: "✓ 标准 Minecraft 像素", labelEn: "✓ Minecraft Voxel Lock", r: 5, g: 150, b: 105 }
+      ]
+    },
+    library: {
+      charSheetZh: path.join(showcaseDir, "classic_characters_lineup.zh.png"),
+      charSheetEn: path.join(showcaseDir, "classic_characters_lineup.en.png"),
+      charSheetDefault: path.join(showcaseDir, "classic_characters_lineup.png"),
+      objSheetZh: path.join(showcaseDir, "classic_objects_atlas.zh.png"),
+      objSheetEn: path.join(showcaseDir, "classic_objects_atlas.en.png"),
+      objSheetDefault: path.join(showcaseDir, "classic_objects_atlas.png"),
+      characters: [
+        { raw: "lib_char_steve.png", out: path.join(libCharDir, "char_steve.png"), labelZh: "矿工 Steve", labelEn: "Classic Steve" },
+        { raw: "lib_char_alex.png", out: path.join(libCharDir, "char_alex.png"), labelZh: "建筑师 Alex", labelEn: "Slim Alex" },
+        { raw: "lib_char_knight.png", out: path.join(libCharDir, "char_knight.png"), labelZh: "钻石甲大佬", labelEn: "Diamond Knight" },
+        { raw: "lib_char_hoodie.png", out: path.join(libCharDir, "char_hoodie.png"), labelZh: "3D卫衣小人", labelEn: "Cozy Hoodie" },
+        { raw: "lib_mob_creeper.png", out: path.join(libCharDir, "mob_creeper.png"), labelZh: "苦力怕", labelEn: "Creeper" },
+        { raw: "lib_mob_enderman.png", out: path.join(libCharDir, "mob_enderman.png"), labelZh: "抱草块末影人", labelEn: "Enderman" }
+      ],
+      objects: [
+        { raw: "lib_obj_grass.png", out: path.join(libObjDir, "block_grass.png"), labelZh: "草方块", labelEn: "Grass Block" },
+        { raw: "lib_obj_diamond_ore.png", out: path.join(libObjDir, "block_diamond_ore.png"), labelZh: "钻石矿石", labelEn: "Diamond Ore" },
+        { raw: "lib_obj_tnt.png", out: path.join(libObjDir, "block_tnt.png"), labelZh: "TNT炸药", labelEn: "TNT Block" },
+        { raw: "lib_obj_crafting_table.png", out: path.join(libObjDir, "block_crafting_table.png"), labelZh: "工作台", labelEn: "Crafting Table" },
+        { raw: "lib_obj_chest.png", out: path.join(libObjDir, "prop_chest.png"), labelZh: "银锁储物箱", labelEn: "Hinged Chest" },
+        { raw: "lib_obj_piston.png", out: path.join(libObjDir, "prop_piston.png"), labelZh: "粘性活塞", labelEn: "Sticky Piston" },
+        { raw: "lib_obj_pickaxe.png", out: path.join(libObjDir, "item_diamond_pickaxe.png"), labelZh: "像素钻石镐", labelEn: "Diamond Pickaxe" },
+        { raw: "lib_obj_sword.png", out: path.join(libObjDir, "item_diamond_sword.png"), labelZh: "像素钻石剑", labelEn: "Diamond Sword" }
       ]
     },
     cases: [
@@ -1746,42 +2299,10 @@ export function buildBoardsManifest(rawDir) {
         gifPath: path.join(creeperDir, "diamond_creeper_ambush.gif"),
         mp4Path: path.join(creeperDir, "diamond_creeper_ambush.mp4"),
         shots: [
-          {
-            labelZh: "01 · 挥镐敲钻石矿 (0–3.8s)",
-            labelEn: "01 · Mine Diamond Ore (0–3.8s)",
-            chatZh: "出钻石了?!",
-            chatEn: "Diamonds?!",
-            bubbleX: 115,
-            bubbleY: 36,
-            savePath: path.join(creeperDir, "shot_01_mine.png")
-          },
-          {
-            labelZh: "02 · 矿碎惊现苦力怕 (3.8–7.5s)",
-            labelEn: "02 · Creeper Reveal (3.8–7.5s)",
-            chatZh: "嘶——",
-            chatEn: "Tssss...",
-            bubbleX: 212,
-            bubbleY: 56,
-            savePath: path.join(creeperDir, "shot_02_reveal.png")
-          },
-          {
-            labelZh: "03 · 白光闪烁膨胀 (7.5–11.3s)",
-            labelEn: "03 · White Fuse Swell (7.5–11.3s)",
-            chatZh: "快跑!!",
-            chatEn: "RUN!!",
-            bubbleX: 102,
-            bubbleY: 36,
-            savePath: path.join(creeperDir, "shot_03_swell.png")
-          },
-          {
-            labelZh: "04 · 方块烟雾与击飞 (11.3–15s)",
-            labelEn: "04 · Voxel Blast Loop (11.3–15s)",
-            chatZh: "重生点见...",
-            chatEn: "Respawn...",
-            bubbleX: 142,
-            bubbleY: 72,
-            savePath: path.join(creeperDir, "shot_04_blast.png")
-          }
+          { labelZh: "01 · 挥镐敲钻石矿", labelEn: "01 · Mine Diamond Ore", chatZh: "出钻石了?!", chatEn: "Diamonds?!", bubbleX: 115, bubbleY: 36, savePath: path.join(creeperDir, "shot_01_mine.png") },
+          { labelZh: "02 · 矿碎现苦力怕", labelEn: "02 · Creeper Reveal", chatZh: "嘶——", chatEn: "Tssss...", bubbleX: 212, bubbleY: 56, savePath: path.join(creeperDir, "shot_02_reveal.png") },
+          { labelZh: "03 · 白光闪烁膨胀", labelEn: "03 · White Fuse Swell", chatZh: "快跑!!", chatEn: "RUN!!", bubbleX: 102, bubbleY: 36, savePath: path.join(creeperDir, "shot_03_swell.png") },
+          { labelZh: "04 · 方块烟雾击飞", labelEn: "04 · Voxel Blast Loop", chatZh: "重生点见...", chatEn: "Respawn...", bubbleX: 142, bubbleY: 72, savePath: path.join(creeperDir, "shot_04_blast.png") }
         ]
       },
       {
@@ -1792,10 +2313,10 @@ export function buildBoardsManifest(rawDir) {
         gifPath: path.join(cozyDir, "cozy_lantern_build.gif"),
         mp4Path: path.join(cozyDir, "cozy_lantern_build.mp4"),
         shots: [
-          { labelZh: "01 · 放置工作台方块", labelEn: "01 · Snap Crafting Table", chatZh: "搭个小木屋!", chatEn: "Build time!", bubbleX: 116, bubbleY: 38 },
-          { labelZh: "02 · 开启银锁储物箱", labelEn: "02 · Open Hinged Chest", chatZh: "强迫症舒适", chatEn: "Crisp snap!", bubbleX: 118, bubbleY: 38 },
-          { labelZh: "03 · 点亮BSL光影灯笼", labelEn: "03 · BSL Lantern Glow", chatZh: "开启光影!", chatEn: "Shader ON!", bubbleX: 132, bubbleY: 36 },
-          { labelZh: "04 · 粉红美西螈治愈收尾", labelEn: "04 · Pink Axolotl Loop", chatZh: "今日份治愈", chatEn: "Cozy home", bubbleX: 122, bubbleY: 38 }
+          { labelZh: "01 · 放置工作台", labelEn: "01 · Snap Crafting Table", chatZh: "搭个小木屋!", chatEn: "Build time!", bubbleX: 116, bubbleY: 38 },
+          { labelZh: "02 · 开启银锁木箱", labelEn: "02 · Open Hinged Chest", chatZh: "强迫症舒适", chatEn: "Crisp snap!", bubbleX: 118, bubbleY: 38 },
+          { labelZh: "03 · 点亮BSL灯笼", labelEn: "03 · BSL Lantern Glow", chatZh: "开启光影!", chatEn: "Shader ON!", bubbleX: 132, bubbleY: 36 },
+          { labelZh: "04 · 美西螈治愈循环", labelEn: "04 · Pink Axolotl Loop", chatZh: "今日份治愈", chatEn: "Cozy home", bubbleX: 122, bubbleY: 38 }
         ]
       },
       {
@@ -1806,10 +2327,52 @@ export function buildBoardsManifest(rawDir) {
         gifPath: path.join(tntDir, "pro_builder_vs_noob_tnt.gif"),
         mp4Path: path.join(tntDir, "pro_builder_vs_noob_tnt.mp4"),
         shots: [
-          { labelZh: "01 · 钻石大佬 vs 抱TNT萌新", labelEn: "01 · Diamond Pro vs. Noob", chatZh: "别乱动!", chatEn: "Don't touch!", bubbleX: 102, bubbleY: 38 },
-          { labelZh: "02 · 萌新拍下16x16x16 TNT", labelEn: "02 · Noob Places TNT", chatZh: "手滑了...", chatEn: "oops.", bubbleX: 215, bubbleY: 38 },
-          { labelZh: "03 · TNT白光闪烁膨胀", labelEn: "03 · Primed TNT Flash", chatZh: "等一下?!", chatEn: "WAIT—", bubbleX: 160, bubbleY: 36 },
-          { labelZh: "04 · 双人同步45°死鱼眼", labelEn: "04 · Synchronized Deadpan", chatZh: "已踢出服", chatEn: "Banned.", bubbleX: 160, bubbleY: 38 }
+          { labelZh: "01 · 大佬 vs 抱TNT萌新", labelEn: "01 · Pro vs. Noob TNT", chatZh: "别乱动!", chatEn: "Don't touch!", bubbleX: 102, bubbleY: 38 },
+          { labelZh: "02 · 萌新拍下TNT", labelEn: "02 · Noob Places TNT", chatZh: "手滑了...", chatEn: "oops.", bubbleX: 215, bubbleY: 38 },
+          { labelZh: "03 · TNT白光闪烁", labelEn: "03 · Primed TNT Flash", chatZh: "等一下?!", chatEn: "WAIT!", bubbleX: 160, bubbleY: 36 },
+          { labelZh: "04 · 同步死鱼眼", labelEn: "04 · Deadpan Stare", chatZh: "已踢出服", chatEn: "Banned.", bubbleX: 160, bubbleY: 38 }
+        ]
+      },
+      {
+        prefix: "redstone",
+        sheetZh: path.join(redstoneDir, "redstone_storyboard_sheet.zh.png"),
+        sheetEn: path.join(redstoneDir, "redstone_storyboard_sheet.en.png"),
+        sheetDefault: path.join(redstoneDir, "redstone_storyboard_sheet.png"),
+        gifPath: path.join(redstoneDir, "redstone_chain_asmr.gif"),
+        mp4Path: path.join(redstoneDir, "redstone_chain_asmr.mp4"),
+        shots: [
+          { labelZh: "01 · 点亮红石线路", labelEn: "01 · Ignite Redstone", chatZh: "通电!", chatEn: "Power ON!", bubbleX: 118, bubbleY: 38 },
+          { labelZh: "02 · 活塞顶起钻石块", labelEn: "02 · Sticky Piston Push", chatZh: "丝滑卡扣", chatEn: "Snap!", bubbleX: 118, bubbleY: 38 },
+          { labelZh: "03 · 红石灯逐格亮起", labelEn: "03 · Lamp Cascade", chatZh: "多米诺亮灯", chatEn: "Cascade!", bubbleX: 122, bubbleY: 38 },
+          { labelZh: "04 · 钻石展台收尾", labelEn: "04 · Pedestal Loop", chatZh: "极度舒适", chatEn: "Clean loop", bubbleX: 122, bubbleY: 38 }
+        ]
+      },
+      {
+        prefix: "enderman",
+        sheetZh: path.join(endermanDir, "enderman_storyboard_sheet.zh.png"),
+        sheetEn: path.join(endermanDir, "enderman_storyboard_sheet.en.png"),
+        sheetDefault: path.join(endermanDir, "enderman_storyboard_sheet.png"),
+        gifPath: path.join(endermanDir, "enderman_block_heist.gif"),
+        mp4Path: path.join(endermanDir, "enderman_block_heist.mp4"),
+        shots: [
+          { labelZh: "01 · 身后现末影人", labelEn: "01 · Enderman Behind", chatZh: "总觉得凉飕飕", chatEn: "Who's there?", bubbleX: 108, bubbleY: 38 },
+          { labelZh: "02 · 顺走一块草方块", labelEn: "02 · Grass Block Heist", chatZh: "我的草坪?!", chatEn: "My lawn?!", bubbleX: 108, bubbleY: 38 },
+          { labelZh: "03 · 对视张嘴震动", labelEn: "03 · Eye Contact Stare", chatZh: "别看眼睛!", chatEn: "Don't look!", bubbleX: 108, bubbleY: 38 },
+          { labelZh: "04 · 瞬移抱块循环", labelEn: "04 · Teleport Loop", chatZh: "礼貌怪盗", chatEn: "Polite thief", bubbleX: 108, bubbleY: 38 }
+        ]
+      },
+      {
+        prefix: "axolotl",
+        sheetZh: path.join(axolotlDir, "axolotl_storyboard_sheet.zh.png"),
+        sheetEn: path.join(axolotlDir, "axolotl_storyboard_sheet.en.png"),
+        sheetDefault: path.join(axolotlDir, "axolotl_storyboard_sheet.png"),
+        gifPath: path.join(axolotlDir, "axolotl_rainy_shelter.gif"),
+        mp4Path: path.join(axolotlDir, "axolotl_rainy_shelter.mp4"),
+        shots: [
+          { labelZh: "01 · 雨夜粉红美西螈", labelEn: "01 · Rainy Pink Axolotl", chatZh: "淋雨的小家伙", chatEn: "*shiver*", bubbleX: 160, bubbleY: 88 },
+          { labelZh: "02 · 递出温暖灯笼", labelEn: "02 · Warm Lantern Offer", chatZh: "跟我回家吧", chatEn: "Come home", bubbleX: 118, bubbleY: 38 },
+          { labelZh: "03 · 橡木屋红石暖灯", labelEn: "03 · Cozy Oak Shelter", chatZh: "暖和多了!", chatEn: "So warm!", bubbleX: 118, bubbleY: 38 },
+          { labelZh: "04 · 爱心粒子循环", labelEn: "04 · Heart Particle Loop", chatZh: "晚安小方块", chatEn: "Cozy night", bubbleX: 122, bubbleY: 38 }
         ]
       }
     ]

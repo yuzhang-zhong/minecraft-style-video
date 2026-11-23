@@ -343,10 +343,33 @@ Options:
   --rig <id>         Rig proportion: steve-wide | alex-slim | mob-quadruped | mob-enderman
   --shader <id>      Visual shader: bsl-sunlight | bare-bones-trailer | vanilla-crisp | rtx-emissive
   --name <string>    Character display name (default: "Steve")
-  --lang <mode>      Output language: zh-en | zh | en (default: zh-en)
+  --lang <code>      Output language: en | zh | zh-tw | ja | ko | es | fr | de | pt | ru | zh-en (default: en)
   --json             Output structured JSON
   --help             Show this help message`);
 }
+
+const SUPPORTED_LANGS = new Set(["en", "zh", "zh-tw", "ja", "ko", "es", "fr", "de", "pt", "ru", "zh-en"]);
+
+export function normalizeLang(code = "en") {
+  const clean = String(code || "en").toLowerCase().trim();
+  if (clean === "zh-cn") return "zh";
+  if (clean === "pt-br") return "pt";
+  return SUPPORTED_LANGS.has(clean) ? clean : "en";
+}
+
+const SPEC_HEADERS = {
+  en: { title: "Minecraft Character & Voxel Object DNA Card", turn: "3-View Character Turnaround Prompt", obj: "Isometric Voxel Object Prompt", neg: "Anti-Drift Negative Prompt" },
+  zh: { title: "Minecraft 角色与方块物体设定卡", turn: "角色三视图生成提示词", obj: "方块与道具等距特写提示词", neg: "负向防串味词" },
+  "zh-tw": { title: "Minecraft 角色與方塊物體設定卡", turn: "角色三視圖生成提示詞", obj: "方塊與道具等距特寫提示詞", neg: "負向防串味詞" },
+  ja: { title: "Minecraft キャラ＆ボクセルオブジェクト DNA カード", turn: "3面図リファレンスプロンプト", obj: "アイソメトリック・ブロックプロンプト", neg: "崩れ防止ネガティブプロンプト" },
+  ko: { title: "Minecraft 캐릭터 & 복셀 오브젝트 DNA 카드", turn: "3면도 캐릭터 레퍼런스 프롬프트", obj: "아이소메트릭 블록 프롬프트", neg: "왜곡 방지 네거티브 프롬프트" },
+  es: { title: "Ficha ADN de Personaje y Bloque Voxel Minecraft", turn: "Prompt de Referencia en 3 Vistas", obj: "Prompt Isométrico de Bloque/Objeto", neg: "Prompt Negativo Anti-Deriva" },
+  fr: { title: "Fiche ADN Personnage & Bloc Voxel Minecraft", turn: "Prompt Référence 3 Vues", obj: "Prompt Isométrique de Bloc/Objet", neg: "Prompt Négatif Anti-Dérive" },
+  de: { title: "Minecraft Charakter- & Voxel-Block-DNA-Karte", turn: "3-Ansichten-Charakter-Prompt", obj: "Isometrischer Voxel-Objekt-Prompt", neg: "Negativ-Prompt gegen Stilabweichung" },
+  pt: { title: "Ficha DNA de Personagem e Bloco Voxel Minecraft", turn: "Prompt de Referência em 3 Vistas", obj: "Prompt Isométrico de Bloco/Objeto", neg: "Prompt Negativo Anti-Desvio" },
+  ru: { title: "Карта ДНК персонажа и воксельного блока Minecraft", turn: "Промпт референса в 3 проекциях", obj: "Изометрический промпт блока/предмета", neg: "Негативный промпт против искажений" },
+  "zh-en": { title: "Minecraft Character & Voxel Object DNA Card / 角色与方块设定卡", turn: "3-View Turnaround Prompt / 三视图提示词", obj: "Isometric Object Prompt / 方块提示词", neg: "Anti-Drift Negative Prompt / 负向防串味词" }
+};
 
 export function parseArgs(argv) {
   const opts = {
@@ -356,7 +379,7 @@ export function parseArgs(argv) {
     rig: "",
     shader: "",
     name: "Steve",
-    lang: "zh-en",
+    lang: "en",
     json: false,
     help: false
   };
@@ -371,7 +394,7 @@ export function parseArgs(argv) {
     else if (arg === "--rig" && argv[i + 1]) opts.rig = argv[++i];
     else if (arg === "--shader" && argv[i + 1]) opts.shader = argv[++i];
     else if (arg === "--name" && argv[i + 1]) opts.name = argv[++i];
-    else if (arg === "--lang" && argv[i + 1]) opts.lang = argv[++i];
+    else if (arg === "--lang" && argv[i + 1]) opts.lang = normalizeLang(argv[++i]);
   }
   return opts;
 }
@@ -449,51 +472,55 @@ export function buildVoxelSpec(rawOpts = {}) {
   };
 }
 
-function formatMarkdown(spec, lang) {
+function formatMarkdown(spec, rawLang) {
+  const lang = normalizeLang(rawLang);
+  const hdr = SPEC_HEADERS[lang] || SPEC_HEADERS.en;
+  const useZh = lang === "zh" || lang === "zh-tw" || lang === "zh-en";
+  const useEn = lang !== "zh";
   const lines = [];
-  lines.push(`# Minecraft Character & Voxel Object DNA Card: ${spec.name}`);
+  lines.push(`# ${hdr.title}: ${spec.name}`);
   lines.push("");
-  lines.push(`- **Character / Mob Archetype**: \`${spec.archetype}\` (${spec.archetypeLabelZh} / ${spec.archetypeLabelEn})`);
-  lines.push(`- **Pixel Rig**: \`${spec.rig}\` — ${spec.rigLabel}`);
-  lines.push(`- **Featured Voxel Block / Prop**: \`${spec.object}\` — ${spec.objectLabelZh} (\`${spec.objectGridSize}\`)`);
-  lines.push(`- **Extruded Held Item**: \`${spec.heldItem}\` — ${spec.heldItemLabelZh}`);
-  lines.push(`- **Shader Style**: \`${spec.shader}\` — ${spec.shaderLabel}`);
+  lines.push(`- **Archetype**: \`${spec.archetype}\` (${useZh ? spec.archetypeLabelZh : spec.archetypeLabelEn})`);
+  lines.push(`- **Pixel Rig**: \`${spec.rig}\` (${spec.rigLabel})`);
+  lines.push(`- **Featured Voxel Block / Prop**: \`${spec.object}\` (${useZh ? spec.objectLabelZh : spec.objectLabelEn}, \`${spec.objectGridSize}\`)`);
+  lines.push(`- **Extruded Held Item**: \`${spec.heldItem}\` (${useZh ? spec.heldItemLabelZh : spec.heldItemLabelEn})`);
+  lines.push(`- **Shader Style**: \`${spec.shader}\` (${spec.shaderLabel})`);
   lines.push(
     `- **Color Swatches**: Skin \`${spec.palette.skinTone}\` · Primary \`${spec.palette.primaryColor}\` · Secondary \`${spec.palette.secondaryColor}\` · Accent \`${spec.palette.accentColor}\``
   );
   lines.push("");
 
-  if (lang !== "zh") {
-    lines.push("## 3-View Character Turnaround Prompt (English)");
+  if (useEn) {
+    lines.push(`## ${hdr.turn} (EN)`);
     lines.push("```text");
     lines.push(spec.turnaroundPromptEn);
     lines.push("```");
     lines.push("");
-    lines.push("## Isometric Voxel Object / Block Prompt (English)");
+    lines.push(`## ${hdr.obj} (EN)`);
     lines.push("```text");
     lines.push(spec.objectPromptEn);
     lines.push("```");
     lines.push("");
   }
 
-  if (lang !== "en") {
-    lines.push("## 角色三视图生成提示词 (中文)");
+  if (useZh) {
+    lines.push("## 角色三视图生成提示词 (ZH)");
     lines.push("```text");
     lines.push(spec.turnaroundPromptZh);
     lines.push("```");
     lines.push("");
-    lines.push("## 方块与道具等距特写提示词 (中文)");
+    lines.push("## 方块与道具等距特写提示词 (ZH)");
     lines.push("```text");
     lines.push(spec.objectPromptZh);
     lines.push("```");
     lines.push("");
   }
 
-  lines.push("## Anti-Drift Negative Prompt / 负向防串味词");
+  lines.push(`## ${hdr.neg}`);
   lines.push("```text");
   if (lang === "zh") lines.push(spec.negativePromptZh);
-  else if (lang === "en") lines.push(spec.negativePromptEn);
-  else lines.push(`${spec.negativePromptEn}\n${spec.negativePromptZh}`);
+  else if (lang === "zh-en" || lang === "zh-tw") lines.push(`${spec.negativePromptEn}\n${spec.negativePromptZh}`);
+  else lines.push(spec.negativePromptEn);
   lines.push("```");
 
   return lines.join("\n");
