@@ -1,0 +1,36 @@
+{
+  "name": "minecraft-style-skill",
+  "version": "1.2.0",
+  "private": false,
+  "type": "module",
+  "description": "Generate Minecraft-style voxel character, mob, and block short videos with locked 8x8x8/16x16x16 pixel-grid geometry, 9:16 storyboards, and model-specific prompts.",
+  "license": "MIT",
+  "repository": "github:yuzhang-zhong/minecraft-style-skill",
+  "keywords": [
+    "agent-skill",
+    "codex-skill",
+    "copilot-skill",
+    "claude-skill",
+    "minecraft",
+    "voxel",
+    "blockbench",
+    "ai-video",
+    "kling",
+    "seedance",
+    "wan",
+    "sora",
+    "short-video",
+    "pi-package"
+  ],
+  "scripts": {
+    "voxel": "node scripts/voxel_spec.mjs",
+    "compile": "node scripts/shot_compiler.mjs",
+    "check": "node scripts/drift_check.mjs",
+    "render": "node scripts/render_preview.mjs",
+    "validate": "node scripts/validate_skill.mjs",
+    "test": "node --test tests/run_tests.mjs"
+  },
+  "pi": {
+    "skills": ["./"]
+  }
+}

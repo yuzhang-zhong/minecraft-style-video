@@ -1,0 +1,10 @@
+{
+  "plugins": [
+    {
+      "name": "minecraft-style-skill",
+      "description": "Generate Minecraft-style voxel character, mob, and block short videos with locked 8x8x8/16x16x16 pixel-grid geometry, 9:16 storyboards, and model-specific prompts.",
+      "version": "1.2.0",
+      "path": ".."
+    }
+  ]
+}

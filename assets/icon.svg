@@ -1,0 +1,97 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="mc-title mc-desc">
+  <title id="mc-title">Minecraft Style Skill icon</title>
+  <desc id="mc-desc">A canonical Minecraft 8x8x8 voxel character with a 3D hair layer holding a stepped 16x16x1 pixel-art diamond pickaxe beside a 16x16x16 grass block and 9:16 video badge.</desc>
+  <defs>
+    <linearGradient id="bg" x1="48" y1="32" x2="464" y2="480" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0F172A"/>
+      <stop offset="0.55" stop-color="#1E293B"/>
+      <stop offset="1" stop-color="#064E3B"/>
+    </linearGradient>
+    <linearGradient id="frameGlow" x1="64" y1="64" x2="448" y2="448" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#4AEDD9"/>
+      <stop offset="0.5" stop-color="#22C55E"/>
+      <stop offset="1" stop-color="#F59E0B"/>
+    </linearGradient>
+    <filter id="shadow" x="40" y="40" width="432" height="440" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="14" stdDeviation="12" flood-color="#020617" flood-opacity="0.52"/>
+    </filter>
+  </defs>
+
+  <!-- Outer rounded container -->
+  <rect width="512" height="512" rx="108" fill="url(#bg)"/>
+  <rect x="18" y="18" width="476" height="476" rx="92" stroke="url(#frameGlow)" stroke-width="4" stroke-opacity="0.65"/>
+
+  <!-- 9:16 Voxel badge -->
+  <rect x="52" y="50" width="146" height="36" rx="8" fill="#0F172A" fill-opacity="0.78" stroke="#4AEDD9" stroke-width="2"/>
+  <rect x="66" y="61" width="14" height="14" fill="#4AEDD9"/>
+  <text x="88" y="74" fill="#F8FAFC" font-family="Consolas, monospace" font-size="17" font-weight="700">9:16 VOXEL</text>
+
+  <!-- Grass Block Base (Crisp 16x16 pixel-stepped overhang) -->
+  <g filter="url(#shadow)">
+    <!-- Dirt base -->
+    <rect x="76" y="396" width="360" height="64" fill="#8B5A2B" stroke="#5C3A1B" stroke-width="4"/>
+    <rect x="96" y="416" width="24" height="24" fill="#704621"/>
+    <rect x="168" y="424" width="24" height="24" fill="#A06B38"/>
+    <rect x="264" y="412" width="24" height="24" fill="#704621"/>
+    <rect x="348" y="420" width="24" height="24" fill="#A06B38"/>
+    <!-- Stepped pixel grass top & overhang -->
+    <rect x="76" y="380" width="360" height="22" fill="#4ADE80"/>
+    <rect x="76" y="372" width="360" height="10" fill="#22C55E"/>
+    <rect x="92" y="402" width="24" height="14" fill="#22C55E"/>
+    <rect x="148" y="402" width="32" height="18" fill="#22C55E"/>
+    <rect x="216" y="402" width="28" height="12" fill="#22C55E"/>
+    <rect x="284" y="402" width="36" height="18" fill="#22C55E"/>
+    <rect x="356" y="402" width="28" height="14" fill="#22C55E"/>
+
+    <!-- Canonical Minecraft Character (8x8x8 Cube Head + 8x12x4 Torso + 4x12x4 Flat Square Arms) -->
+    <!-- Flush 4x12x4 Legs -->
+    <rect x="164" y="316" width="56" height="64" fill="#3B3B8F" stroke="#1E1B4B" stroke-width="3"/>
+    <rect x="220" y="316" width="56" height="64" fill="#312E81" stroke="#1E1B4B" stroke-width="3"/>
+
+    <!-- 4x12x4 Left Arm -->
+    <rect x="108" y="216" width="56" height="108" fill="#00AAAA" stroke="#083344" stroke-width="3"/>
+    <rect x="108" y="276" width="56" height="48" fill="#D2996C" stroke="#7C2D12" stroke-width="3"/>
+
+    <!-- 8x12x4 Torso (Cyan Tunic) -->
+    <rect x="164" y="216" width="112" height="108" fill="#06B6D4" stroke="#083344" stroke-width="3.5"/>
+    <rect x="204" y="216" width="32" height="20" fill="#D2996C"/>
+    <rect x="180" y="252" width="24" height="24" fill="#0891B2"/>
+    <rect x="236" y="268" width="24" height="24" fill="#0891B2"/>
+
+    <!-- 4x12x4 Right Arm (Raised holding Pickaxe) -->
+    <rect x="276" y="204" width="56" height="108" fill="#00AAAA" stroke="#083344" stroke-width="3"/>
+    <rect x="276" y="264" width="56" height="48" fill="#D2996C" stroke="#7C2D12" stroke-width="3"/>
+
+    <!-- Sharp 90-Degree 8x8x8 Cubic Head (156, 84, 128x128) -->
+    <rect x="156" y="84" width="128" height="128" fill="#E0A97E" stroke="#451A03" stroke-width="4"/>
+    <!-- +0.5px 3D Outer Hair Layer (Stepped Pixel Bangs) -->
+    <path d="M148 76H292V124H268V108H236V124H204V108H172V132H148V76Z" fill="#4A2C18" stroke="#271509" stroke-width="3.5"/>
+    <!-- 8x8 Pixel Face (2x1 White Sclera + 1x1 Indigo Pupils + Pixel Mouth) -->
+    <rect x="172" y="148" width="16" height="16" fill="#FFFFFF"/>
+    <rect x="188" y="148" width="16" height="16" fill="#3B3B8F"/>
+    <rect x="236" y="148" width="16" height="16" fill="#3B3B8F"/>
+    <rect x="252" y="148" width="16" height="16" fill="#FFFFFF"/>
+    <rect x="204" y="164" width="32" height="12" fill="#B87D56"/>
+    <rect x="196" y="180" width="48" height="14" fill="#7C3F23"/>
+
+    <!-- Stepped 16x16x1 Pixel-Art Diamond Pickaxe (Right Side) -->
+    <g>
+      <!-- Diagonal Pixel Wood Stick -->
+      <rect x="316" y="264" width="18" height="18" fill="#78491E"/>
+      <rect x="334" y="246" width="18" height="18" fill="#8B5A2B"/>
+      <rect x="352" y="228" width="18" height="18" fill="#78491E"/>
+      <rect x="370" y="210" width="18" height="18" fill="#8B5A2B"/>
+      <rect x="388" y="192" width="18" height="18" fill="#78491E"/>
+      <!-- Stepped Cyan Diamond Pickaxe Head -->
+      <rect x="352" y="138" width="72" height="18" fill="#4AEDD9" stroke="#0F766E" stroke-width="2"/>
+      <rect x="370" y="156" width="54" height="18" fill="#22D3EE"/>
+      <rect x="406" y="156" width="18" height="54" fill="#4AEDD9" stroke="#0F766E" stroke-width="2"/>
+      <rect x="334" y="156" width="18" height="18" fill="#4AEDD9"/>
+      <rect x="424" y="174" width="18" height="36" fill="#06B6D4"/>
+    </g>
+
+    <!-- Play Video Badge -->
+    <rect x="356" y="308" width="96" height="96" rx="20" fill="#10B981" stroke="#ECFDF5" stroke-width="4"/>
+    <path d="M390 334L428 356L390 378V334Z" fill="#FFFFFF"/>
+  </g>
+</svg>

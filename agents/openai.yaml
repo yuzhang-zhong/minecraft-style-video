@@ -1,0 +1,6 @@
+version: 1
+name: minecraft-style-skill
+display_name: Minecraft Style Skill
+description: Generate Minecraft-style voxel character, mob, and block short videos with locked 8x8x8/16x16x16 pixel-grid geometry, 9:16 storyboards, and model-specific prompts.
+entrypoint: ../SKILL.md
+icon: ../assets/icon.svg
