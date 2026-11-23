@@ -9,58 +9,76 @@ import { fileURLToPath } from "node:url";
 
 const ARCHETYPES = {
   "steve-miner": {
-    labelZh: "经典矿工史蒂夫 (Classic Wide Steve Miner)",
-    labelEn: "Canonical Minecraft Steve Miner (4px Wide Arms)",
+    labelZh: "原版经典史蒂夫 (Canonical Mojang Steve)",
+    labelEn: "Canonical Vanilla Minecraft Steve (4px Wide Arms)",
     defaultRig: "steve-wide",
     defaultObject: "diamond-ore",
     defaultHeldItem: "diamond-pickaxe",
     defaultShader: "bsl-sunlight",
-    skinTone: "Warm Pixel Tan #C68664",
-    primaryColor: "Cyan Tunic #00AAAA",
-    secondaryColor: "Indigo Trousers #3B3B8F",
+    skinTone: "Mojang Tan #B98665",
+    primaryColor: "Steve Teal Tunic #00A8AF",
+    secondaryColor: "Indigo Jeans #3D389C",
     accentColor: "Diamond Cyan #4AEDD9",
-    skinLayerEn: "raised +0.5px 3D dark-brown pixel hair bangs layer on the 8x8x8 cubic head, +0.25px rolled cyan sleeve cuffs",
-    skinLayerZh: "8x8x8直角立方体头外层悬浮+0.5px厚度的深棕3D像素刘海层，袖口带+0.25px外层立体卷边",
-    outfitEn: "canonical cyan pixel tunic on an 8x12x4 rectangular prism torso, indigo-blue 4x12x4 rectangular prism leg blocks sitting flush side-by-side with dark grey pixel boots",
-    outfitZh: "经典青色像素短衫（8x12x4长方体躯干）、靛蓝色并拢齐平的4x12x4长方体裤腿配深灰像素靴底",
-    faceEn: "flat 8x8 nearest-neighbor pixel face with 2x1 white sclera, indigo 1x1 sliding pupil pixels, floating 2x1 pixel brows, and classic pixel beard/smile, zero 3D human nose",
-    faceZh: "纯平8x8邻近采样像素五官（2x1像素眼白+1x1靛蓝滑动瞳孔+2x1悬浮像素眉毛与经典像素嘴型，无3D突起真人鼻梁）"
+    skinLayerEn:
+      "flush single-layer 8x8x8 cubic head (no protruding 3D hair wig) with dark brown (#2F2013) top hair rows, iconic 1-pixel temple sideburns on the front face, and stepped pixel hairline around the ear on the side faces",
+    skinLayerZh:
+      "纯正单层齐平8x8x8正方体头（无外凸3D头套），顶部两行为深棕(#2F2013)像素短发，正面左右边缘各带1像素标志性鬓角，侧面呈阶梯状绕耳发际线",
+    outfitEn:
+      "canonical Mojang teal-cyan (#00A8AF) 8x12x4 pixel shirt with stepped V-neck skin collar and signature asymmetric untucked hem hanging over the right hip, 4-pixel short sleeves over 8-pixel bare tan 4x12x4 wide arms, indigo-violet (#3D389C) 4x12x4 flush jeans, and 2-pixel grey shoes (#68686C)",
+    outfitZh:
+      "官方青蓝(#00A8AF) 8x12x4像素短袖衫（阶梯V领露肤+标志性右侧不对称下摆垂出1像素），4x12x4宽版手臂（上方4像素青色短袖+下方8像素裸露暖棕小臂），并拢4x12x4靛紫(#3D389C)像素长裤配2像素深灰鞋底",
+    faceEn:
+      "exact 8x8 Mojang Steve pixel face: 2x1 eyes at row 4 (white outer sclera + #4B3D89 indigo-violet inner pupil), 2x1 brown pixel nose at row 5, and iconic U-shaped dark-brown (#452514) pixel chin beard/goatee framing the mouth flush with the bottom chin edge, zero 3D protruding nose",
+    faceZh:
+      "精确复刻原版8x8史蒂夫像素脸：中线下方为2x1白眼仁+靛紫(#4B3D89)像素瞳孔，其下为2x1棕色像素鼻，下巴底边齐平环绕标志性U型深棕像素络腮胡/嘴部，零3D真人鼻梁凸起"
   },
   "alex-builder": {
-    labelZh: "森系建筑师艾莉克斯 (Slim 3px Alex Builder)",
-    labelEn: "Minecraft Alex Voxel Architect (3px Slim Arms)",
+    labelZh: "原版纤细版艾莉克斯 (Canonical Slim Alex)",
+    labelEn: "Canonical Vanilla Minecraft Alex (3px Slim Arms)",
     defaultRig: "alex-slim",
     defaultObject: "crafting-table",
     defaultHeldItem: "lantern-torch",
     defaultShader: "bsl-sunlight",
-    skinTone: "Ivory Pixel Peach #F3C6A5",
-    primaryColor: "Moss Green Tunic #5E8C42",
-    secondaryColor: "Chestnut Boots #6B4C35",
-    accentColor: "Lantern Gold #F59E0B",
-    skinLayerEn: "raised +0.5px 3D ginger side-ponytail hair layer and cream pixel beret on the 8x8x8 cubic head, +0.25px leather utility belt overlay on torso",
-    skinLayerZh: "8x8x8立方体头外层悬浮+0.5px厚度的橘红3D像素侧马尾与奶油色像素贝雷帽层，腰间带+0.25px立体工具腰带外层",
-    outfitEn: "moss-green pixel builder tunic on an 8x12x4 torso, slim 3x12x4 rectangular prism arms, brown 4x12x4 leg blocks flush side-by-side",
-    outfitZh: "森系苔绿像素建筑师上衣（8x12x4躯干）、3x12x4纤细版长方体手臂、棕褐并拢4x12x4方柱裤腿",
-    faceEn: "flat 8x8 pixel face with Fresh Animations style 2x1 white sclera, emerald-green 1x1 pupil pixels, and warm pixel smile",
-    faceZh: "纯平8x8像素五官（Fresh Animations可动2x1眼白、翠绿1x1像素瞳孔与温暖像素微笑）"
+    skinTone: "Ivory Peach #F3C7A6",
+    primaryColor: "Olive Moss Tunic #7EA04E",
+    secondaryColor: "Chestnut Trousers #6C5340",
+    accentColor: "Ginger Hair #D57536",
+    skinLayerEn:
+      "flush 8x8x8 cubic head with bright ginger-orange (#D57536) pixel hair, asymmetric swept forehead bangs on the left, and iconic ginger ponytail draped forward over her shoulder onto the chest",
+    skinLayerZh:
+      "齐平8x8x8正方体头绘有亮橘红(#D57536)像素发色、左侧不对称斜分像素刘海，以及垂落在左胸前的标志性橘红像素单马尾",
+    outfitEn:
+      "canonical olive-moss (#7EA04E) 8x12x4 pixel tunic cinched with a dark-brown pixel belt, slim 3x12x4 rectangular prism arms with 3-pixel short sleeves and 9-pixel pale-peach bare forearms, brown (#6C5340) 4x12x4 trousers, and grey-brown boots",
+    outfitZh:
+      "原版橄榄苔绿(#7EA04E) 8x12x4像素短袖上衣配深棕像素腰带，3x12x4纤细版手臂（3像素短袖+9像素浅肤色小臂），棕褐(#6C5340) 4x12x4并拢方裤腿与灰棕短靴",
+    faceEn:
+      "exact 8x8 Mojang Alex pixel face with 2x1 white sclera, emerald-green (#307B3B) 1x1 inner pupils, and a delicate 2x1 soft coral-rose (#CF7D72) pixel mouth",
+    faceZh:
+      "精确原版8x8艾莉克斯像素脸：2x1眼白配翠绿(#307B3B) 1x1内侧像素瞳孔，以及柔和珊瑚粉(#CF7D72) 2x1像素小嘴"
   },
   "diamond-knight": {
-    labelZh: "附魔钻石甲战神 (3D Diamond Armor Pro)",
-    labelEn: "Enchanted Diamond Armor Knight (4px Wide Rig)",
+    labelZh: "穿戴3D钻石套的史蒂夫 (Steve in 3D Diamond Armor)",
+    labelEn: "Canonical Steve Wearing 3D Minecraft Diamond Armor",
     defaultRig: "steve-wide",
     defaultObject: "chest-hinged",
     defaultHeldItem: "diamond-sword",
     defaultShader: "rtx-emissive",
-    skinTone: "Warm Pixel Tan #C68664",
+    skinTone: "Mojang Tan #B98665",
     primaryColor: "Diamond Armor Cyan #4AEDD9",
-    secondaryColor: "Netherite Dark Trim #37313B",
-    accentColor: "Enchantment Glint #A855F7",
-    skinLayerEn: "raised +0.6px 3D cubic Diamond Helmet shell with T-shaped nose guard and +0.4px 3D Diamond Chestplate shoulder pauldrons with subtle purple enchantment glint",
-    skinLayerZh: "外层套有+0.6px厚度的3D立体钻石头盔方块壳与+0.4px钻石胸甲肩甲外层，泛着淡紫色附魔流光",
-    outfitEn: "pixelated #4AEDD9 cyan diamond chestplate over an 8x12x4 torso, diamond greaves on flush 4x12x4 leg blocks",
-    outfitZh: "8x12x4躯干覆盖亮青色#4AEDD9像素钻石胸甲，并拢4x12x4双腿包裹像素钻石护腿与战靴",
-    faceEn: "confident 8x8 pixel face visible beneath the cubic diamond helmet visor with glowing cyan-tinted 2x1 pixel eyes",
-    faceZh: "钻石头盔方形面罩下露出自信的8x8像素脸与高对比度2x1像素眼睛"
+    secondaryColor: "Dark Teal Armor Trim #127C80",
+    accentColor: "Diamond Shine #D6FCF8",
+    skinLayerEn:
+      "raised +0.5px 3D cubic #4AEDD9 Diamond Helmet shell with open front visor cutout and central 2-pixel diamond nose-guard bar framing Steve's indigo eyes and U-beard underneath, plus +0.3px 3D Diamond Shoulder Pauldrons over bare tan forearms",
+    skinLayerZh:
+      "在原版Steve头部外层套有+0.5px厚度的亮青(#4AEDD9) 3D钻石头盔壳（正面敞开面罩切口、眉心垂下标志性2像素钻石护鼻条，露出内部Steve靛紫眼睛与U型胡须），双肩套有+0.3px 3D钻石肩甲并露出下方暖棕裸露小臂",
+    outfitEn:
+      "sculpted #4AEDD9 pixel Diamond Chestplate with dark-teal (#127C80) pixel border over Steve's 8x12x4 torso, and 3D Diamond Leggings & Boots with distinct leg seam over flush 4x12x4 legs",
+    outfitZh:
+      "8x12x4躯干外覆深青描边的亮青像素钻石胸甲，并拢4x12x4双腿外覆分腿接缝清晰的3D钻石护腿与钻石靴",
+    faceEn:
+      "authentic 8x8 Steve pixel face (indigo pupils, 2x1 brown nose, U-shaped chin beard) peering out from inside the recessed 3D Diamond Helmet visor",
+    faceZh:
+      "3D钻石头盔面罩开口内清晰露出原版8x8史蒂夫像素五官（靛紫像素眼、像素鼻与U型下巴胡）"
   },
   "cozy-hoodie": {
     labelZh: "小红书高赞治愈系卫衣小人 (Aesthetic 3D Hoodie Skin)",

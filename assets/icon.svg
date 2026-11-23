@@ -43,36 +43,44 @@
     <rect x="284" y="402" width="36" height="18" fill="#22C55E"/>
     <rect x="356" y="402" width="28" height="14" fill="#22C55E"/>
 
-    <!-- Canonical Minecraft Character (8x8x8 Cube Head + 8x12x4 Torso + 4x12x4 Flat Square Arms) -->
-    <!-- Flush 4x12x4 Legs -->
-    <rect x="164" y="316" width="56" height="64" fill="#3B3B8F" stroke="#1E1B4B" stroke-width="3"/>
-    <rect x="220" y="316" width="56" height="64" fill="#312E81" stroke="#1E1B4B" stroke-width="3"/>
+    <!-- Canonical Minecraft Character (Exact 8x8x8 Mojang Steve Head + 8x12x4 Teal Shirt + 4px Sleeves + Indigo Jeans) -->
+    <!-- Flush 4x12x4 Legs (Indigo Jeans #3D389C + 2px Grey Shoes #68686C) -->
+    <rect x="164" y="316" width="56" height="54" fill="#3D389C" stroke="#1E1B4B" stroke-width="2.5"/>
+    <rect x="220" y="316" width="56" height="54" fill="#342F87" stroke="#1E1B4B" stroke-width="2.5"/>
+    <rect x="164" y="366" width="56" height="14" fill="#68686C"/>
+    <rect x="220" y="366" width="56" height="14" fill="#525256"/>
 
-    <!-- 4x12x4 Left Arm -->
-    <rect x="108" y="216" width="56" height="108" fill="#00AAAA" stroke="#083344" stroke-width="3"/>
-    <rect x="108" y="276" width="56" height="48" fill="#D2996C" stroke="#7C2D12" stroke-width="3"/>
+    <!-- 4x12x4 Left Arm (4px Teal Sleeve + 8px Warm Tan Arm) -->
+    <rect x="108" y="212" width="56" height="36" fill="#00A8AF" stroke="#083344" stroke-width="2.5"/>
+    <rect x="108" y="248" width="56" height="72" fill="#B98665" stroke="#5C3A21" stroke-width="2.5"/>
 
-    <!-- 8x12x4 Torso (Cyan Tunic) -->
-    <rect x="164" y="216" width="112" height="108" fill="#06B6D4" stroke="#083344" stroke-width="3.5"/>
-    <rect x="204" y="216" width="32" height="20" fill="#D2996C"/>
-    <rect x="180" y="252" width="24" height="24" fill="#0891B2"/>
-    <rect x="236" y="268" width="24" height="24" fill="#0891B2"/>
+    <!-- 8x12x4 Torso (Mojang Teal Tunic #00A8AF + Stepped V-Neck + Asymmetric Untucked Hem) -->
+    <rect x="164" y="212" width="112" height="108" fill="#00A8AF" stroke="#083344" stroke-width="3"/>
+    <rect x="204" y="212" width="32" height="22" fill="#B98665"/>
+    <rect x="164" y="308" width="42" height="12" fill="#3D389C"/>
 
-    <!-- 4x12x4 Right Arm (Raised holding Pickaxe) -->
-    <rect x="276" y="204" width="56" height="108" fill="#00AAAA" stroke="#083344" stroke-width="3"/>
-    <rect x="276" y="264" width="56" height="48" fill="#D2996C" stroke="#7C2D12" stroke-width="3"/>
+    <!-- 4x12x4 Right Arm (Raised holding Pickaxe: 4px Teal Sleeve + 8px Tan Arm) -->
+    <rect x="276" y="204" width="56" height="36" fill="#00A8AF" stroke="#083344" stroke-width="2.5"/>
+    <rect x="276" y="240" width="56" height="72" fill="#B98665" stroke="#5C3A21" stroke-width="2.5"/>
 
-    <!-- Sharp 90-Degree 8x8x8 Cubic Head (156, 84, 128x128) -->
-    <rect x="156" y="84" width="128" height="128" fill="#E0A97E" stroke="#451A03" stroke-width="4"/>
-    <!-- +0.5px 3D Outer Hair Layer (Stepped Pixel Bangs) -->
-    <path d="M148 76H292V124H268V108H236V124H204V108H172V132H148V76Z" fill="#4A2C18" stroke="#271509" stroke-width="3.5"/>
-    <!-- 8x8 Pixel Face (2x1 White Sclera + 1x1 Indigo Pupils + Pixel Mouth) -->
+    <!-- Sharp 90-Degree 8x8x8 Mojang Steve Head (156, 84, 128x128 -> 1px = 16x16 SVG units!) -->
+    <rect x="156" y="84" width="128" height="128" fill="#B98665" stroke="#2E1F12" stroke-width="3.5"/>
+    <!-- Row 0 & 1 (iy=7,6): Full 8px Dark Brown Hair + Row 2 (iy=5) Sideburns at col 0 & 7 -->
+    <rect x="156" y="84" width="128" height="32" fill="#2F2013"/>
+    <rect x="156" y="116" width="16" height="16" fill="#2F2013"/>
+    <rect x="268" y="116" width="16" height="16" fill="#2F2013"/>
+    <!-- Row 4 (iy=3, y=148): Canonical White + Indigo Eyes -->
     <rect x="172" y="148" width="16" height="16" fill="#FFFFFF"/>
-    <rect x="188" y="148" width="16" height="16" fill="#3B3B8F"/>
-    <rect x="236" y="148" width="16" height="16" fill="#3B3B8F"/>
+    <rect x="188" y="148" width="16" height="16" fill="#4B3D89"/>
+    <rect x="236" y="148" width="16" height="16" fill="#4B3D89"/>
     <rect x="252" y="148" width="16" height="16" fill="#FFFFFF"/>
-    <rect x="204" y="164" width="32" height="12" fill="#B87D56"/>
-    <rect x="196" y="180" width="48" height="14" fill="#7C3F23"/>
+    <!-- Row 5 (iy=2, y=164): 2x1 Brown Pixel Nose -->
+    <rect x="204" y="164" width="32" height="16" fill="#88563D"/>
+    <!-- Row 6 & 7 (iy=1,0, y=180..212): Iconic Steve U-Shaped Beard & Mouth Flush at Chin Bottom! -->
+    <rect x="188" y="180" width="16" height="16" fill="#452514"/>
+    <rect x="204" y="180" width="32" height="16" fill="#844C3A"/>
+    <rect x="236" y="180" width="16" height="16" fill="#452514"/>
+    <rect x="188" y="196" width="64" height="16" fill="#452514"/>
 
     <!-- Stepped 16x16x1 Pixel-Art Diamond Pickaxe (Right Side) -->
     <g>

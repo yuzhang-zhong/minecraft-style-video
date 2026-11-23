@@ -6,12 +6,12 @@ All visual references in this catalog are pre-rendered in [`assets/library/`](..
 
 ![Classic Minecraft Characters and Mobs Lineup](../assets/showcase/classic_characters_lineup.en.png)
 
-| Preset ID | Name & Rig | Locked Pixel Proportions & Outer Layer | Asset |
+| Preset ID | Name & Rig | Locked Pixel Proportions & Mojang Skin Details | Asset |
 | --- | --- | --- | --- |
-| `steve-miner` | **Classic Steve (`steve-wide`)** | `8x8x8` cube head + `+0.5px` brown bangs, cyan `8x12x4` tunic, `4x12x4` wide arms with `4x4` square hand ends, `16x16x1` Diamond Pickaxe | [`char_steve.png`](../assets/library/characters/char_steve.png) |
-| `alex-builder` | **Slim Alex (`alex-slim`)** | `8x8x8` cube head + `+0.5px` ginger side-ponytail, moss-green `8x12x4` tunic, `3x12x4` slim arms with `3x4` square hands, warm voxel Lantern | [`char_alex.png`](../assets/library/characters/char_alex.png) |
-| `diamond-knight` | **Diamond Armor Pro (`steve-wide`)** | `+0.6px` 3D `#4AEDD9` Diamond Helmet & Chestplate shell over `8x12x4` torso, holding `16x16x1` stepped Diamond Sword | [`char_knight.png`](../assets/library/characters/char_knight.png) |
-| `cozy-hoodie` | **Cozy 3D Hoodie (`alex-slim`)** | Pastel matcha hoodie with `+0.5px` espresso bangs and white 3D voxel headphones over ears | [`char_hoodie.png`](../assets/library/characters/char_hoodie.png) |
+| `steve-miner` | **Classic Steve (`steve-wide`)** | Flush `8x8x8` head with 1px temple sideburns, indigo-violet `#4B3D89` eyes, 2x1 brown nose & U-shaped chin beard; `#00A8AF` teal shirt with untucked hem, `4px` sleeves + `8px` tan arms, `#3D389C` jeans & `2px` grey shoes | [`char_steve.png`](../assets/library/characters/char_steve.png) |
+| `alex-builder` | **Slim Alex (`alex-slim`)** | Flush `8x8x8` head with asymmetric swept ginger `#D57536` bangs, emerald `#307B3B` eyes, 2x1 coral mouth, front shoulder ponytail, `#7EA04E` olive tunic + belt, `3x12x4` slim arms | [`char_alex.png`](../assets/library/characters/char_alex.png) |
+| `diamond-knight` | **Diamond Armor Pro (`steve-wide`)** | Canonical Steve wearing a `+0.5px` 3D `#4AEDD9` Diamond Helmet (open visor + `2px` nose-guard bar), 3D Diamond Chestplate, and `5px` Shoulder Pauldrons over bare tan forearms | [`char_knight.png`](../assets/library/characters/char_knight.png) |
+| `cozy-hoodie` | **Cozy 3D Hoodie (`alex-slim`)** | Aesthetic `64x64` skin with `2x2` berry eyes, `1x1` cheek blush, 3D white voxel headphones, and `#7ADEA2` matcha hoodie with white drawstrings | [`char_hoodie.png`](../assets/library/characters/char_hoodie.png) |
 | `creeper-mob` | **Creeper (`mob-quadruped`)** | `8x8x8` head with `8x8` black frowning pixel face, `8x12x4` vertical body, **zero arms**, four `4x6x4` legs | [`mob_creeper.png`](../assets/library/characters/mob_creeper.png) |
 | `enderman-mob` | **Enderman (`mob-enderman`)** | Jet-black `8x8x8` separable jaw head with glowing `#D946EF` `3x1` pixel eyes, thin `2x30x2` stick limbs carrying a `16x16x16` Grass Block | [`mob_enderman.png`](../assets/library/characters/mob_enderman.png) |
 

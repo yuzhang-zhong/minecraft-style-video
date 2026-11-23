@@ -198,77 +198,205 @@ export function evalVoxelSprite16x16(pLocal, spriteRows, pxSize = 0.026, halfThi
   return { d: bestD, color: bestCol, roughness: 0.16 };
 }
 
-// ---------- Canonical 8x8 Minecraft Pixel Face Evaluator ----------
-function evalMinecraftFace8x8(ix, iy, expression = "smile", theme = "steve") {
-  // ix in 0..7 (left to right), iy in 0..7 (bottom to top)
-  const white = [255, 255, 255];
-  const pupil =
-    theme === "alex"
-      ? [34, 139, 87]
-      : theme === "knight"
-      ? [34, 211, 238]
-      : [59, 59, 143];
-  const brow =
-    theme === "alex"
-      ? [180, 83, 32]
-      : theme === "knight"
-      ? [30, 41, 59]
-      : [74, 44, 24];
+// ---------- Official Mojang-Accurate 8x8 / 8x12 / 4x12 Character Pixel Maps ----------
+const STEVE_PX = {
+  H: [47, 32, 19],   // dark brown hair
+  h: [60, 41, 24],   // mid brown hair
+  k: [37, 25, 14],   // deep hair shadow
+  S: [185, 134, 101],// warm tan skin
+  s: [171, 122, 90], // shaded tan skin
+  l: [198, 147, 113],// highlight tan skin
+  d: [152, 104, 75], // ear / neck shadow skin
+  W: [255, 255, 255],// eye sclera white
+  P: [76, 61, 139],  // Steve indigo-violet pupil
+  N: [136, 86, 61],  // 2x1 pixel nose
+  B: [69, 37, 20],   // Steve classic U-beard dark brown
+  b: [55, 29, 15],   // chin beard shadow
+  M: [134, 77, 58],  // mouth center inside beard
+  T: [0, 168, 175],  // Mojang Steve teal-cyan shirt
+  t: [8, 151, 159],  // shaded teal-cyan fold
+  C: [0, 182, 189],  // bright teal-cyan highlight
+  c: [5, 124, 132],  // dark teal collar / hem shadow
+  J: [61, 56, 156],  // Steve indigo-violet jeans
+  j: [50, 46, 134],  // shaded jeans seam
+  K: [72, 67, 172],  // jeans highlight
+  G: [104, 104, 108],// Steve grey shoe upper
+  g: [80, 80, 84]    // Steve dark grey shoe sole
+};
 
-  // Waterfall tears on columns 2 and 5
+const STEVE_HEAD_FRONT = [
+  "HhHkHhHk", // iy=7 (top)
+  "hHkHhkhH", // iy=6
+  "HslSSlsH", // iy=5: iconic 1px sideburns at col 0 & 7!
+  "sSlSSlSs", // iy=4: brow skin
+  "sWPSSPWl", // iy=3: canonical white + indigo eyes!
+  "sSsNNsSs", // iy=2: 2x1 brown pixel nose
+  "ssBMMBss", // iy=1: U-beard sides + mouth center
+  "dsbBBbsd"  // iy=0: iconic chin beard flush at bottom edge!
+];
+
+const STEVE_HEAD_SIDE = [
+  "HhHkHhHk", // iy=7 (col 0 = front +Z, col 7 = back -Z)
+  "hHkHhkhH", // iy=6
+  "HhHkhHhk", // iy=5: sideburn across
+  "SsHhHkHh", // iy=4: front 2px skin, stepped hair behind
+  "SlsddhHk", // iy=3: front 3px skin, 2px ear, back 3px hair
+  "SsSdshHk", // iy=2: ear base + back hairline
+  "sSlSSssd", // iy=1: jawline skin
+  "dsSsSssd"  // iy=0: bottom neck/jaw skin
+];
+
+const STEVE_HEAD_BACK = [
+  "HhHkHhHk",
+  "hHkHhkhH",
+  "HkHhkhHh",
+  "hkhHhHkH",
+  "HhHkHhHk",
+  "khHhHkHh",
+  "dsSssSsd",
+  "dssssssd"
+];
+
+const STEVE_TORSO_FRONT = [
+  "tTcSScTt", // ty=11: open neck skin col 3,4
+  "TTcsscTT", // ty=10: stepped V-collar skin col 3,4
+  "tTTccTTt", // ty=9:  dark teal collar base
+  "tTTTTTTt", // ty=8
+  "tTCttCTt", // ty=7
+  "tTTTTTTt", // ty=6
+  "tTTttTTt", // ty=5
+  "tTTTTTTt", // ty=4
+  "tTTccTTt", // ty=3
+  "tTTTTTTt", // ty=2
+  "tcTttTct", // ty=1
+  "JJJccTtT"  // ty=0: signature asymmetric untucked Steve shirt hem!
+];
+
+const ALEX_PX = {
+  H: [213, 117, 54],  // ginger-orange hair
+  h: [191, 97, 38],   // shaded ginger hair
+  k: [226, 134, 72],  // highlight ginger hair
+  S: [243, 199, 166], // pale ivory-peach skin
+  s: [232, 184, 150], // shaded peach skin
+  l: [249, 211, 182], // highlight peach skin
+  W: [255, 255, 255], // sclera white
+  P: [48, 123, 59],   // Alex emerald-green pupil
+  M: [207, 125, 114], // Alex 2x1 soft coral-rose pixel mouth
+  T: [126, 160, 78],  // olive-moss tunic
+  t: [106, 138, 62],  // shaded olive tunic
+  c: [84, 112, 46],   // dark olive fold
+  B: [82, 58, 40],    // brown belt
+  U: [148, 120, 76],  // belt buckle
+  J: [108, 83, 64],   // brown trousers
+  j: [90, 68, 52],    // shaded trousers
+  G: [82, 70, 62],    // grey-brown boots
+  g: [64, 54, 48]
+};
+
+const ALEX_HEAD_FRONT = [
+  "HkHhHkHh", // iy=7
+  "hHkHHkHh", // iy=6
+  "HHhSSlsH", // iy=5: iconic Alex swept ginger bangs on left!
+  "hSlSSlSs", // iy=4
+  "sWPSSPWs", // iy=3: white + emerald green eyes
+  "sSlSSlSs", // iy=2
+  "ssSMMSss", // iy=1: delicate 2x1 coral-pink mouth
+  "ssSSSSss"  // iy=0
+];
+
+const ALEX_TORSO_FRONT = [
+  "tTcSShHt", // ty=11: ginger ponytail hanging over front-right shoulder!
+  "TTcssHhT", // ty=10
+  "tTTcckht", // ty=9
+  "tTTTTtht", // ty=8
+  "tTTttTHt", // ty=7: tip of ginger ponytail
+  "tTTTTTTt", // ty=6
+  "tTTttTTt", // ty=5
+  "tTTTTTTt", // ty=4
+  "BBBBUBBB", // ty=3: dark brown belt + buckle
+  "cBBUBBBc", // ty=2
+  "tTTttTTt", // ty=1
+  "JJttttJJ"  // ty=0
+];
+
+const HOODIE_PX = {
+  H: [64, 40, 28],    // espresso hair
+  h: [82, 52, 36],
+  S: [250, 216, 190], // soft cream-peach skin
+  s: [238, 198, 170],
+  W: [255, 255, 255],
+  P: [45, 34, 48],    // dark berry anime skin eye
+  R: [248, 150, 162], // cheek blush pixel
+  M: [212, 128, 122],
+  T: [122, 222, 162], // pastel matcha hoodie
+  t: [98, 198, 140],
+  c: [76, 172, 118],
+  D: [248, 250, 252], // white hoodie drawstrings
+  J: [125, 174, 238], // washed denim
+  j: [104, 152, 218],
+  G: [244, 246, 250], // white sneakers
+  g: [203, 213, 225]
+};
+
+const HOODIE_HEAD_FRONT = [
+  "HhHHhHHh", // iy=7
+  "HHhHHhHH", // iy=6
+  "HhSSShHh", // iy=5: cute parted espresso bangs
+  "hSSSSSSh", // iy=4
+  "SWPSSPWS", // iy=3: top of 2x2 cute skin eyes
+  "RPPSSPPR", // iy=2: bottom of eyes + pink cheek blush at col 0 & 7
+  "sSSMMSSs", // iy=1
+  "sSSSSSSs"  // iy=0
+];
+
+const HOODIE_TORSO_FRONT = [
+  "tTccccTt",
+  "TTDttDTT", // white drawstrings at col 2 & 5!
+  "tTDttDTt",
+  "TTDttDTT",
+  "tTDttDTt",
+  "TTtTTtTT",
+  "tTccccTt", // kangaroo pocket top
+  "TcTTTTcT",
+  "TcTTTTcT",
+  "cccccccc", // ribbed hem
+  "JJJJJJJJ",
+  "jJJJJJJj"
+];
+
+function evalDynamicExpressionOverlay(ix, iy, expression, baseTheme) {
+  if (expression === "smile") return null;
+  const white = [255, 255, 255];
+  const dark = [20, 24, 34];
+
   if (expression === "panic" || expression === "tears") {
-    if ((ix === 2 || ix === 5) && iy <= 2) {
-      return iy % 2 === 0 ? [56, 189, 248] : [125, 211, 252];
+    if ((ix === 2 || ix === 5) && iy <= 1) {
+      return iy === 0 ? [56, 189, 248] : [125, 211, 252];
     }
   }
-
-  // Eyebrows (iy = 5)
-  if (iy === 5 && (ix === 1 || ix === 2 || ix === 5 || ix === 6)) {
-    if (expression !== "shocked" && expression !== "panic") return brow;
-  }
-  if ((expression === "shocked" || expression === "panic") && iy === 6 && (ix === 1 || ix === 2 || ix === 5 || ix === 6)) {
-    return brow;
-  }
-
-  // Eyes (iy = 3..4)
   if (expression === "shocked" || expression === "panic") {
-    // 2x2 wide shocked pixel eyes
     if ((iy === 3 || iy === 4) && (ix === 1 || ix === 2 || ix === 5 || ix === 6)) {
-      if (iy === 4 && (ix === 2 || ix === 5)) return [15, 23, 42];
+      if (iy === 3 && (ix === 2 || ix === 5)) return dark;
       return white;
     }
-  } else if (expression === "deadpan") {
-    // Half-closed horizontal pixel eyelids
-    if (iy === 4 && (ix === 1 || ix === 2 || ix === 5 || ix === 6)) return brow;
+    if ((iy === 1 || iy === 2) && (ix === 3 || ix === 4)) return [36, 20, 22];
+    return null;
+  }
+  if (expression === "deadpan") {
+    if (iy === 4 && (ix === 1 || ix === 2 || ix === 5 || ix === 6)) {
+      return baseTheme === "alex" ? [168, 82, 32] : [58, 38, 22];
+    }
     if (iy === 3 && (ix === 1 || ix === 5)) return white;
-    if (iy === 3 && (ix === 2 || ix === 6)) return pupil;
-  } else if (expression === "happy") {
-    // Curved happy pixel eyes
-    if (iy === 4 && (ix === 1 || ix === 2 || ix === 5 || ix === 6)) return [30, 41, 59];
-    if (iy === 3 && (ix === 1 || ix === 6)) return [251, 113, 133]; // blush texel
-  } else {
-    // Canonical 2x1 Minecraft eye (sclera on outer pixel, pupil on inner pixel)
-    if (iy === 4) {
-      if (ix === 1 || ix === 6) return white;
-      if (ix === 2 || ix === 5) return pupil;
+    if (iy === 3 && (ix === 2 || ix === 6)) {
+      return baseTheme === "alex" ? [48, 123, 59] : [76, 61, 139];
     }
-    if (theme === "alex" && iy === 3 && (ix === 1 || ix === 6)) {
-      return [244, 142, 152]; // subtle cheek blush texel
-    }
+    return null;
   }
-
-  // Nose & Mouth (iy = 1..2)
-  if (expression === "shocked" || expression === "panic") {
-    if ((iy === 1 || iy === 2) && (ix === 3 || ix === 4)) return [30, 20, 24];
-  } else if (expression === "deadpan") {
-    if (iy === 1 && (ix === 3 || ix === 4)) return [74, 44, 24];
-  } else if (theme === "steve") {
-    if (iy === 2 && (ix === 3 || ix === 4)) return [158, 102, 72]; // Steve pixel nose
-    if (iy === 1 && (ix === 2 || ix === 3 || ix === 4 || ix === 5)) return [92, 52, 32]; // Steve pixel smile/beard
-  } else {
-    if (iy === 1 && (ix === 3 || ix === 4)) return [168, 92, 78];
+  if (expression === "happy") {
+    if (iy === 3 && (ix === 1 || ix === 2 || ix === 5 || ix === 6)) return [42, 32, 28];
+    if (iy === 2 && (ix === 1 || ix === 6)) return [248, 142, 156];
+    return null;
   }
-
   return null;
 }
 
@@ -607,53 +735,22 @@ export function evalMinecraftAvatarSDF(pWorld, cfg = {}) {
     waistPitch = 0,
     headYaw = 0,
     headPitch = 0,
-    armLPitch = -0.12,
+    armLPitch = -0.06,
     armRPitch = -0.35,
     legLPitch = 0,
     legRPitch = 0,
     expression = "smile",
-    theme = "steve", // "steve" | "alex" | "knight"
+    theme = "steve", // "steve" | "alex" | "knight" | "hoodie"
     heldItem = "pickaxe", // "pickaxe" | "sword" | "lantern" | "tnt-mini" | "none"
     hurtTint = false,
     driftMode = "none" // "none" | "human-fingers" | "blurry-noodle" | "roblox-lego"
   } = cfg;
 
-  const palettes = {
-    steve: {
-      skin: [212, 154, 114],
-      hair: [78, 44, 24],
-      tunic: [6, 182, 212],
-      pants: [59, 59, 143],
-      shoes: [71, 85, 105],
-      slim: false
-    },
-    alex: {
-      skin: [243, 198, 165],
-      hair: [194, 88, 36],
-      tunic: [94, 140, 66],
-      pants: [107, 76, 53],
-      shoes: [78, 54, 38],
-      slim: true
-    },
-    knight: {
-      skin: [212, 154, 114],
-      hair: [56, 229, 212], // Diamond Helmet outer layer
-      tunic: [56, 229, 212], // Diamond Chestplate
-      pants: [20, 184, 166],
-      shoes: [45, 55, 72],
-      slim: false
-    },
-    hoodie: {
-      skin: [250, 214, 184],
-      hair: [68, 42, 28],
-      tunic: [134, 239, 172], // Pastel Matcha Hoodie
-      pants: [147, 197, 253], // Washed Denim
-      shoes: [248, 250, 252],
-      slim: true
-    }
-  };
+  // "knight" wears 3D Diamond Armor OVER canonical Steve!
+  const baseChar = theme === "alex" ? "alex" : theme === "hoodie" ? "hoodie" : "steve";
+  const pxMap = baseChar === "alex" ? ALEX_PX : baseChar === "hoodie" ? HOODIE_PX : STEVE_PX;
+  const isSlim = baseChar === "alex" || baseChar === "hoodie";
 
-  const pal = palettes[theme] || palettes.steve;
   let p = sub3(pWorld, pos);
   if (roll !== 0) {
     p = add3(rotZ(sub3(p, v3(0, -0.68, 0)), -roll), v3(0, -0.68, 0));
@@ -666,11 +763,11 @@ export function evalMinecraftAvatarSDF(pWorld, cfg = {}) {
   }
 
   let bestD = 1e9;
-  let bestCol = pal.tunic;
-  let bestRough = 0.36;
+  let bestCol = pxMap.T;
+  let bestRough = 0.42;
   let bestEmissive = 0;
 
-  const addPart = (d, col, rough = 0.36, emissive = 0) => {
+  const addPart = (d, col, rough = 0.42, emissive = 0) => {
     if (d < bestD) {
       bestD = d;
       bestCol = col;
@@ -679,152 +776,221 @@ export function evalMinecraftAvatarSDF(pWorld, cfg = {}) {
     }
   };
 
-  const bevel = driftMode === "none" ? 0.004 : 0.045;
-  const texNoiseScale = driftMode === "blurry-noodle" || driftMode === "roblox-lego" ? 0 : 18;
+  const isBlurryOrToy = driftMode === "blurry-noodle" || driftMode === "roblox-lego";
+  const bevel = driftMode === "none" ? 0.001 : 0.045;
 
   const pWaist = rotX(sub3(p, v3(0, -0.14, 0)), -waistPitch);
   const pUpper = add3(pWaist, v3(0, -0.14, 0));
 
-  // 1. Canonical 8x12x4 Torso (centered at y = 0.13)
+  // 1. Canonical 8x12x4 Torso (centered at y = 0.13, spans y = -0.14 .. +0.40)
   const pTorso = sub3(pUpper, v3(0, 0.13, 0));
-  const dTorso = sdRoundBox(pTorso, v3(0.18, 0.27, 0.09), bevel);
+  const dTorso = bevel <= 0.002 ? sdBox(pTorso, v3(0.18, 0.27, 0.09)) : sdRoundBox(pTorso, v3(0.18, 0.27, 0.09), bevel);
   if (dTorso < bestD) {
-    const tx = clamp(Math.floor(((pTorso.x + 0.18) / 0.36) * 8), 0, 7);
-    const ty = clamp(Math.floor(((pTorso.y + 0.27) / 0.54) * 12), 0, 11);
-    const tz = clamp(Math.floor(((pTorso.z + 0.09) / 0.18) * 4), 0, 3);
-    let col = pal.tunic;
-    if (pTorso.z > 0.075 && ty >= 10 && (tx === 3 || tx === 4)) {
-      col = pal.skin; // V-neck pixel cutout
-    } else if (theme === "alex" && ty === 2) {
-      col = [102, 64, 36]; // Alex pixel belt
-    } else if (theme === "knight" && (tx === 0 || tx === 7 || ty === 11 || ty === 0)) {
-      col = [14, 148, 136]; // Diamond chestplate pixel trim
+    if (isBlurryOrToy) {
+      addPart(dTorso, [6, 182, 212], 0.28);
+    } else {
+      const tx = clamp(Math.floor(((pTorso.x + 0.18) / 0.36) * 8), 0, 7);
+      const ty = clamp(Math.floor(((pTorso.y + 0.27) / 0.54) * 12), 0, 11);
+      const rowIdx = 11 - ty;
+      const torsoFront =
+        baseChar === "alex" ? ALEX_TORSO_FRONT : baseChar === "hoodie" ? HOODIE_TORSO_FRONT : STEVE_TORSO_FRONT;
+      let ch = torsoFront[rowIdx][tx];
+      if (pTorso.z <= 0.078) {
+        // Back / sides of shirt (no front V-neck skin cutout)
+        if (ch === "S" || ch === "s" || ch === "D" || ch === "U") ch = "T";
+      }
+      addPart(dTorso, pxMap[ch] || pxMap.T, 0.44);
     }
-    const n = (texHash(tx, ty, tz) - 0.5) * texNoiseScale;
-    addPart(dTorso, shadeTexel(col, n), theme === "knight" ? 0.18 : 0.38);
   }
 
-  // 2. Canonical 8x8x8 Cubic Head (centered at y = 0.58)
+  // +0.3px 3D Diamond Chestplate Shell over Steve when theme === "knight"
+  if (theme === "knight" && driftMode === "none") {
+    const dPlate = sdBox(sub3(pTorso, v3(0, 0.02, 0)), v3(0.194, 0.25, 0.104));
+    if (dPlate < bestD) {
+      const tx = clamp(Math.floor(((pTorso.x + 0.194) / 0.388) * 8), 0, 7);
+      const ty = clamp(Math.floor(((pTorso.y + 0.23) / 0.50) * 11), 0, 10);
+      // Authentic Diamond Chestplate V-neck cutout & pixel bevel trim
+      const isNeckCut = pTorso.z > 0.08 && ty >= 9 && (tx === 3 || tx === 4);
+      if (!isNeckCut) {
+        const isTrim = tx === 0 || tx === 7 || ty === 0 || ty === 10 || (ty === 5 && (tx === 3 || tx === 4));
+        const isShine = (tx === 1 || tx === 2) && (ty === 7 || ty === 8);
+        const c = isTrim ? [18, 124, 128] : isShine ? [214, 252, 248] : (tx + ty) % 3 === 0 ? [52, 218, 204] : [74, 237, 217];
+        addPart(dPlate, c, 0.16, 0.08);
+      }
+    }
+  }
+
+  // 2. Canonical 8x8x8 Cubic Head (centered at y = 0.58, spans y = +0.40 .. +0.76)
   const pHead = rotY(rotX(sub3(pUpper, v3(0, 0.58, 0)), -headPitch), -headYaw);
   let dHead;
   if (driftMode === "roblox-lego") {
-    // FAIL mode: Roblox barrel cylinder head + Lego top stud
     dHead = sdRoundedCylinder(pHead, 0.19, 0.065, 0.185);
     const dStud = sdRoundedCylinder(sub3(pHead, v3(0, 0.22, 0)), 0.10, 0.012, 0.05);
     if (dStud < bestD) addPart(dStud, [250, 204, 21], 0.18);
   } else {
-    dHead = sdRoundBox(pHead, v3(0.18, 0.18, 0.18), bevel);
+    dHead = bevel <= 0.002 ? sdBox(pHead, v3(0.18, 0.18, 0.18)) : sdRoundBox(pHead, v3(0.18, 0.18, 0.18), bevel);
   }
 
   if (dHead < bestD) {
     const ix = clamp(Math.floor(((pHead.x + 0.18) / 0.36) * 8), 0, 7);
     const iy = clamp(Math.floor(((pHead.y + 0.18) / 0.36) * 8), 0, 7);
-    const iz = clamp(Math.floor(((pHead.z + 0.18) / 0.36) * 8), 0, 7);
-    const n = (texHash(ix, iy, iz) - 0.5) * (texNoiseScale * 0.65);
-    let hCol = shadeTexel(driftMode === "roblox-lego" ? [245, 205, 48] : pal.skin, n);
-    if (pHead.z > 0.165) {
-      const fCol = evalMinecraftFace8x8(ix, iy, expression, theme);
-      if (fCol) hCol = fCol;
-    } else if (iy >= 6 || pHead.z < -0.15) {
-      hCol = shadeTexel(pal.hair, n);
+    const iz = clamp(Math.floor(((0.18 - pHead.z) / 0.36) * 8), 0, 7); // 0 = front (+Z), 7 = back (-Z)
+    const rowIdx = 7 - iy;
+
+    if (driftMode === "roblox-lego") {
+      let c = [245, 205, 48];
+      if (pHead.z > 0.15 && iy === 4 && (ix === 2 || ix === 5)) c = [20, 24, 32];
+      if (pHead.z > 0.15 && iy === 2 && ix >= 2 && ix <= 5) c = [20, 24, 32];
+      addPart(dHead, c, 0.22);
+    } else if (driftMode === "blurry-noodle") {
+      // Bilinear-blurred smudged face
+      let c = [206, 150, 112];
+      if (pHead.y > 0.08 || pHead.z < -0.14) c = [68, 44, 26];
+      else if (pHead.z > 0.16 && Math.abs(Math.abs(pHead.x) - 0.07) < 0.035 && Math.abs(pHead.y - 0.01) < 0.025) c = [55, 52, 110];
+      addPart(dHead, c, 0.35);
+    } else {
+      // Exact 6-face Mojang 8x8 pixel mapping!
+      let hCol = pxMap.S;
+      if (pHead.y > 0.172) {
+        // Top of head (+Y): 8x8 pixel hair
+        const ch = STEVE_HEAD_BACK[iz][ix];
+        hCol = pxMap[ch === "d" || ch === "s" ? "H" : ch] || pxMap.H;
+      } else if (pHead.y < -0.172) {
+        // Underside of chin (-Y)
+        hCol = pxMap.d || pxMap.s;
+      } else if (pHead.z > 0.172) {
+        // Front face (+Z)
+        const frontMat =
+          baseChar === "alex" ? ALEX_HEAD_FRONT : baseChar === "hoodie" ? HOODIE_HEAD_FRONT : STEVE_HEAD_FRONT;
+        const dyn = evalDynamicExpressionOverlay(ix, iy, expression, baseChar);
+        if (dyn) {
+          hCol = dyn;
+        } else {
+          const ch = frontMat[rowIdx][ix];
+          hCol = pxMap[ch] || pxMap.S;
+        }
+      } else if (pHead.z < -0.172) {
+        // Back face (-Z)
+        const ch = STEVE_HEAD_BACK[rowIdx][ix];
+        hCol = pxMap[ch] || pxMap.H;
+      } else {
+        // Left & Right Side faces (±X): iconic stepped Minecraft sideburns + ear + jawline!
+        const ch = STEVE_HEAD_SIDE[rowIdx][iz];
+        hCol = pxMap[ch] || pxMap.S;
+      }
+      addPart(dHead, hCol, 0.42);
     }
-    addPart(dHead, hCol, 0.34);
   }
 
   // FAIL mode 1: 3D protruding human nose
   if (driftMode === "human-fingers") {
-    const dNose = sdRoundBox(sub3(pHead, v3(0, -0.01, 0.21)), v3(0.038, 0.055, 0.065), 0.022);
-    addPart(dNose, [232, 158, 122], 0.35);
+    const dNose = sdRoundBox(sub3(pHead, v3(0, -0.02, 0.21)), v3(0.038, 0.055, 0.065), 0.022);
+    addPart(dNose, [224, 152, 116], 0.35);
   }
 
-  // 3. Raised +0.5px 3D Outer Skin Layer (Stepped Pixel Bangs / Ponytail / Diamond Helmet)
-  if (driftMode === "none") {
-    const dTopShell = sdBox(sub3(pHead, v3(0, 0.155, -0.01)), v3(0.198, 0.052, 0.198));
-    const dBackShell = sdBox(sub3(pHead, v3(0, 0.03, -0.165)), v3(0.198, 0.16, 0.042));
-    const dSideL = sdBox(sub3(pHead, v3(-0.175, 0.05, 0.01)), v3(0.026, 0.14, 0.16));
-    const dSideR = sdBox(sub3(pHead, v3(0.175, 0.05, 0.01)), v3(0.026, 0.14, 0.16));
-    // Stepped 3D pixel bangs across forehead
-    const dBang1 = sdBox(sub3(pHead, v3(-0.09, 0.125, 0.182)), v3(0.088, 0.048, 0.022));
-    const dBang2 = sdBox(sub3(pHead, v3(0.09, 0.142, 0.182)), v3(0.088, 0.032, 0.022));
-    let dHair3D = Math.min(dTopShell, dBackShell, dSideL, dSideR, dBang1, dBang2);
-
-    if (theme === "alex") {
-      // Alex 3D pixel side ponytail + beret top
-      const dPony = sdBox(sub3(pHead, v3(-0.185, -0.06, 0.12)), v3(0.048, 0.11, 0.048));
-      dHair3D = Math.min(dHair3D, dPony);
+  // 3. Authentic 3D Outer Head Gear ONLY for Diamond Knight (3D Diamond Helmet) & Cozy Hoodie (3D Headphones)
+  // (Canonical Vanilla Steve & Alex have flush 8x8x8 heads with NO protruding helmet slab!)
+  if (driftMode === "none" && theme === "knight") {
+    // True 3D Minecraft Diamond Helmet (+0.5px shell with open front face cutout + 2px nose-guard bar!)
+    const dHelmOuter = sdBox(sub3(pHead, v3(0, 0.02, 0)), v3(0.204, 0.196, 0.204));
+    const dHelmInner = sdBox(sub3(pHead, v3(0, -0.02, 0)), v3(0.181, 0.185, 0.181));
+    // Carve front visor opening (x in [-0.145, +0.145], y < +0.055, z > 0.10), EXCEPT central 2px nose guard!
+    const dVisorCut = sdBox(sub3(pHead, v3(0, -0.075, 0.16)), v3(0.142, 0.125, 0.08));
+    const dNoseGuard = sdBox(sub3(pHead, v3(0, 0.025, 0.194)), v3(0.044, 0.045, 0.014));
+    const dHelm = Math.min(Math.max(dHelmOuter, -dHelmInner, -dVisorCut), dNoseGuard);
+    if (dHelm < bestD) {
+      const hx = clamp(Math.floor(((pHead.x + 0.204) / 0.408) * 8), 0, 7);
+      const hy = clamp(Math.floor(((pHead.y + 0.176) / 0.392) * 8), 0, 7);
+      const isBorder = hy === 7 || hy === 0 || hx === 0 || hx === 7;
+      const isShine = hy === 6 && (hx >= 1 && hx <= 3);
+      const c = isBorder ? [18, 124, 128] : isShine ? [214, 252, 248] : [74, 237, 217];
+      addPart(dHelm, c, 0.14, 0.10);
     }
-
-    if (dHair3D < bestD) {
-      const hx = Math.floor((pHead.x + 1.0) / 0.045);
-      const hy = Math.floor((pHead.y + 1.0) / 0.045);
-      const hz = Math.floor((pHead.z + 1.0) / 0.045);
-      const n = (texHash(hx, hy, hz) - 0.5) * 18;
-      addPart(dHair3D, shadeTexel(pal.hair, n), theme === "knight" ? 0.16 : 0.38);
-    }
-
-    if (theme === "hoodie") {
-      // White 3D voxel headphones over ears
-      const dCupL = sdBox(sub3(pHead, v3(-0.205, 0.01, 0.02)), v3(0.028, 0.075, 0.065));
-      const dCupR = sdBox(sub3(pHead, v3(0.205, 0.01, 0.02)), v3(0.028, 0.075, 0.065));
-      const dBand = sdBox(sub3(pHead, v3(0, 0.215, 0.02)), v3(0.21, 0.02, 0.04));
-      addPart(Math.min(dCupL, dCupR, dBand), [248, 250, 252], 0.2);
-    }
+  } else if (driftMode === "none" && theme === "hoodie") {
+    const dCupL = sdBox(sub3(pHead, v3(-0.198, -0.01, 0.0)), v3(0.024, 0.068, 0.062));
+    const dCupR = sdBox(sub3(pHead, v3(0.198, -0.01, 0.0)), v3(0.024, 0.068, 0.062));
+    const dBand = sdBox(sub3(pHead, v3(0, 0.194, 0.0)), v3(0.198, 0.016, 0.036));
+    addPart(Math.min(dCupL, dCupR, dBand), [248, 250, 252], 0.2);
   }
 
-  // 4. Canonical 4x12x4 (Steve) or 3x12x4 (Alex) Left & Right Arms
-  const armHalfW = pal.slim ? 0.072 : 0.09;
-  const shoulderX = 0.18 + armHalfW + 0.002;
+  // 4. Canonical 4x12x4 (Steve, halfW=0.09) or 3x12x4 (Alex, halfW=0.0675) Left & Right Arms
+  // Exact Minecraft ModelPlayer pivot: 2px (0.09) below top of torso (y = 0.40 -> pivot y = 0.31), flush at x = ±(0.18 + armHalfW)
+  const armHalfW = isSlim ? 0.0675 : 0.09;
+  const shoulderX = 0.18 + armHalfW;
 
   for (const side of [-1, 1]) {
     const pitch = side < 0 ? armLPitch : armRPitch;
-    const pShoulder = sub3(pUpper, v3(side * shoulderX, 0.36, 0));
+    const pShoulder = sub3(pUpper, v3(side * shoulderX, 0.31, 0));
     let pArm = rotX(pShoulder, -pitch);
     if (driftMode === "blurry-noodle") {
-      // Rubbery noodle curve
-      pArm = v3(pArm.x + Math.sin(pArm.y * 7.0) * 0.07 * side, pArm.y, pArm.z);
+      pArm = v3(pArm.x + Math.sin(pArm.y * 7.5) * 0.065 * side, pArm.y, pArm.z);
     }
-    const pArmBox = sub3(pArm, v3(0, -0.23, 0));
-    const dArm = sdRoundBox(pArmBox, v3(armHalfW, 0.27, 0.09), bevel);
+    const pArmBox = sub3(pArm, v3(0, -0.18, 0)); // spans y = -0.45 .. +0.09 -> top = 0.31 + 0.09 = +0.40 exact!
+    const dArm = bevel <= 0.002 ? sdBox(pArmBox, v3(armHalfW, 0.27, 0.09)) : sdRoundBox(pArmBox, v3(armHalfW, 0.27, 0.09), bevel);
     if (dArm < bestD) {
-      const ay = clamp(Math.floor(((pArmBox.y + 0.27) / 0.54) * 12), 0, 11);
-      const ax = clamp(Math.floor(((pArmBox.x + armHalfW) / (2 * armHalfW)) * 4), 0, 3);
-      const n = (texHash(ax, ay, side) - 0.5) * texNoiseScale;
-      const baseC = ay >= 7 ? pal.tunic : pal.skin;
-      addPart(dArm, shadeTexel(baseC, n), 0.36);
+      if (isBlurryOrToy) {
+        const ay = clamp(Math.floor(((pArmBox.y + 0.27) / 0.54) * 12), 0, 11);
+        addPart(dArm, ay >= 8 ? [6, 182, 212] : driftMode === "roblox-lego" ? [245, 205, 48] : [206, 150, 112], 0.28);
+      } else {
+        const ay = clamp(Math.floor(((pArmBox.y + 0.27) / 0.54) * 12), 0, 11);
+        const ax = clamp(Math.floor(((pArmBox.x + armHalfW) / (2 * armHalfW)) * 4), 0, 3);
+        const az = clamp(Math.floor(((pArmBox.z + 0.09) / 0.18) * 4), 0, 3);
+        const nArm = (texHash(ax + side * 7, ay, az) - 0.5) * 12;
+        // Official Steve has exact 4px sleeve (ay = 8..11) and 8px bare tan arm (ay = 0..7)!
+        // Alex has 3px sleeve (ay = 9..11); Hoodie has long hoodie sleeve (ay = 2..11).
+        const sleeveStart = baseChar === "hoodie" ? 2 : baseChar === "alex" ? 9 : 8;
+        let armCol;
+        if (ay >= sleeveStart) {
+          armCol = shadeTexel(ay === sleeveStart ? pxMap.c : pxMap.T, nArm * 0.7);
+        } else {
+          armCol = shadeTexel(ay === 0 ? (pxMap.s || pxMap.S) : pxMap.S, nArm);
+        }
+        addPart(dArm, armCol, 0.44);
+      }
+    }
+
+    // 3D Diamond Shoulder Pauldrons on top 5px of arms when theme === "knight"
+    if (theme === "knight" && driftMode === "none") {
+      const pPauldron = sub3(pArmBox, v3(0, 0.165, 0));
+      const dPauldron = sdBox(pPauldron, v3(armHalfW + 0.014, 0.115, 0.104));
+      if (dPauldron < bestD) {
+        const py = clamp(Math.floor(((pPauldron.y + 0.115) / 0.23) * 5), 0, 4);
+        const c = py === 0 || py === 4 ? [18, 124, 128] : py === 3 ? [214, 252, 248] : [74, 237, 217];
+        addPart(dPauldron, c, 0.16, 0.08);
+      }
     }
 
     // Drift failure hand modes
-    const pHandEnd = sub3(pArm, v3(0, -0.52, 0));
+    const pHandEnd = sub3(pArm, v3(0, -0.47, 0));
     if (driftMode === "human-fingers") {
       for (let f = -2; f <= 2; f++) {
         const pf = sub3(pHandEnd, v3(f * 0.032, -0.055, 0));
-        addPart(sdRoundBox(pf, v3(0.011, 0.055, 0.012), 0.005), pal.skin, 0.35);
+        addPart(sdRoundBox(pf, v3(0.011, 0.055, 0.012), 0.005), pxMap.S, 0.35);
       }
     } else if (driftMode === "roblox-lego") {
-      addPart(sdLegoCClaw(sub3(pArm, v3(0, -0.54, 0)), 0.85), [245, 205, 48], 0.2);
+      addPart(sdLegoCClaw(sub3(pArm, v3(0, -0.49, 0)), 0.85), [245, 205, 48], 0.2);
     } else if (driftMode === "blurry-noodle" && side === 1) {
-      // Smooth non-voxel round metal rod tool extending forward from right hand
-      const pSmoothRod = rotX(sub3(pArm, v3(0, -0.44, 0.20)), -1.15);
+      const pSmoothRod = rotX(sub3(pArm, v3(0, -0.39, 0.20)), -1.15);
       addPart(sdRoundedCylinder(pSmoothRod, 0.032, 0.015, 0.28), [186, 200, 218], 0.12);
     }
 
-    // Authentic Extruded 16x16x1 Held Voxel Items (attached to Right Flat 4x4 Square Hand, extending forward +Z)
+    // Authentic Extruded 16x16x1 Held Voxel Items (attached to Right Flat Square Hand, extending forward +Z)
     if (driftMode === "none" && side === 1 && heldItem !== "none") {
       if (heldItem === "pickaxe" || heldItem === "sword") {
-        const qGrip = sub3(pArm, v3(0.0, -0.34, 0.26));
+        const qGrip = sub3(pArm, v3(0.0, -0.29, 0.25));
         const pTool = rotY(rotX(qGrip, -0.15), Math.PI / 2);
         const sprite = heldItem === "sword" ? SWORD_SPRITE_16 : PICKAXE_SPRITE_16;
         const sp = evalVoxelSprite16x16(pTool, sprite, 0.026, 0.018);
         addPart(sp.d, sp.color, sp.roughness, 0.15);
       } else if (heldItem === "lantern") {
-        const pLan = sub3(pArm, v3(0, -0.46, 0.18));
-        const dCap = sdBox(sub3(pLan, v3(0, 0.09, 0)), v3(0.06, 0.02, 0.06));
-        const dCore = sdBox(pLan, v3(0.08, 0.08, 0.08));
+        const pLan = sub3(pArm, v3(0, -0.41, 0.16));
+        const dCap = sdBox(sub3(pLan, v3(0, 0.075, 0)), v3(0.055, 0.02, 0.055));
+        const dCore = sdBox(pLan, v3(0.068, 0.068, 0.068));
         addPart(dCap, [51, 65, 85], 0.25, 0);
         addPart(dCore, [251, 191, 36], 0.1, 0.85);
       } else if (heldItem === "tnt-mini") {
         const tnt = evalMinecraftBlockSDF(pArm, {
-          pos: v3(-0.14, -0.42, 0.22),
+          pos: v3(-0.14, -0.37, 0.22),
           scale: 0.48,
           type: "tnt-block"
         });
@@ -833,18 +999,47 @@ export function evalMinecraftAvatarSDF(pWorld, cfg = {}) {
     }
   }
 
-  // 5. Canonical 4x12x4 Flush Left & Right Legs
+  // 5. Canonical 4x12x4 Flush Left & Right Legs (x = ±0.09, spans y = -0.68 .. -0.14)
   for (const side of [-1, 1]) {
     const pitch = side < 0 ? legLPitch : legRPitch;
-    const pHip = sub3(p, v3(side * 0.091, -0.14, 0));
+    const pHip = sub3(p, v3(side * 0.09, -0.14, 0));
     const pLeg = sub3(rotX(pHip, pitch), v3(0, -0.27, 0));
-    const dLeg = sdRoundBox(pLeg, v3(0.089, 0.27, 0.09), bevel);
+    const dLeg = bevel <= 0.002 ? sdBox(pLeg, v3(0.09, 0.27, 0.09)) : sdRoundBox(pLeg, v3(0.089, 0.27, 0.09), bevel);
     if (dLeg < bestD) {
-      const ly = clamp(Math.floor(((pLeg.y + 0.27) / 0.54) * 12), 0, 11);
-      const lx = clamp(Math.floor(((pLeg.x + 0.09) / 0.18) * 4), 0, 3);
-      const n = (texHash(lx, ly, side + 5) - 0.5) * texNoiseScale;
-      const baseC = ly <= 1 ? pal.shoes : pal.pants;
-      addPart(dLeg, shadeTexel(baseC, n), 0.4);
+      if (isBlurryOrToy) {
+        addPart(dLeg, [59, 59, 143], 0.35);
+      } else {
+        const ly = clamp(Math.floor(((pLeg.y + 0.27) / 0.54) * 12), 0, 11);
+        const lx = clamp(Math.floor(((pLeg.x + 0.09) / 0.18) * 4), 0, 3);
+        const lz = clamp(Math.floor(((pLeg.z + 0.09) / 0.18) * 4), 0, 3);
+        const nLeg = (texHash(lx + side * 11, ly, lz + 5) - 0.5) * 10;
+        let legCol;
+        if (ly === 0) legCol = pxMap.g;
+        else if (ly === 1) legCol = pxMap.G;
+        else if (baseChar === "steve" && theme !== "knight" && side === 1 && ly === 11 && pLeg.z > 0.07) {
+          // Canonical Steve untucked cyan shirt corner hanging 1px onto right pant top!
+          legCol = pxMap.c;
+        } else {
+          const isInnerSeam = (side === -1 && lx === 3) || (side === 1 && lx === 0);
+          legCol = shadeTexel(isInnerSeam ? pxMap.j : pxMap.J, nLeg);
+        }
+        addPart(dLeg, legCol, 0.45);
+      }
+    }
+
+    // 3D Diamond Leggings & Diamond Boots when theme === "knight"
+    if (theme === "knight" && driftMode === "none") {
+      const dGreave = sdBox(sub3(pLeg, v3(0, 0.02, 0)), v3(0.092, 0.24, 0.096));
+      const dBoot = sdBox(sub3(pLeg, v3(0, -0.18, 0)), v3(0.098, 0.095, 0.102));
+      const dArmorLeg = Math.min(dGreave, dBoot);
+      if (dArmorLeg < bestD) {
+        const ly = clamp(Math.floor(((pLeg.y + 0.27) / 0.54) * 12), 0, 11);
+        const lx = clamp(Math.floor(((pLeg.x + 0.098) / 0.196) * 4), 0, 3);
+        const isInner = (side === -1 && lx === 3) || (side === 1 && lx === 0);
+        const isTrim = ly === 0 || ly === 3 || ly === 11 || isInner;
+        const c = isTrim ? [18, 124, 128] : ly === 2 ? [214, 252, 248] : (lx + ly) % 2 === 0 ? [74, 237, 217] : [52, 216, 202];
+        addPart(dArmorLeg, c, 0.18, 0.06);
+      }
     }
   }
 
@@ -913,7 +1108,7 @@ export function render3DViewport(width, height, sceneFn, camCfg = {}) {
       const disc = bSphere * bSphere - cSphere;
 
       let t = disc > 0 ? Math.max(0.18, -bSphere - Math.sqrt(disc)) : 99.0;
-      const tMax = disc > 0 ? Math.min(7.5, -bSphere + Math.sqrt(disc)) : 0.0;
+      const tMax = disc > 0 ? Math.min(9.5, -bSphere + Math.sqrt(disc)) : 0.0;
       let hit = null;
       if (disc > 0 && tMax > 0.18) {
         for (let step = 0; step < 36; step++) {
@@ -944,13 +1139,13 @@ export function render3DViewport(width, height, sceneFn, camCfg = {}) {
         const lighting = clamp((skyAmb + keyDiff * 0.58 + fillDiff) * mcFaceFactor * ao + emissive, 0, 1.45);
 
         const H = norm3(add3(keyLight, V));
-        const rough = hit.res.roughness ?? 0.35;
+        const rough = hit.res.roughness ?? 0.42;
         const specPow = rough < 0.22 ? 36 : 16;
-        const specStrength = (rough < 0.22 ? 0.34 : 0.12) * sh;
-        const spec = Math.pow(Math.max(0, dot3(N, H)), specPow) * specStrength;
+        const specStrength = rough < 0.25 ? 0.32 * sh : 0.0;
+        const spec = specStrength > 0 ? Math.pow(Math.max(0, dot3(N, H)), specPow) * specStrength : 0;
 
-        const fresnel = Math.pow(1 - Math.max(0, dot3(N, V)), 3.0);
-        const rim = fresnel * Math.max(0, dot3(N, rimLight)) * 0.22;
+        const fresnel = rough < 0.25 ? Math.pow(1 - Math.max(0, dot3(N, V)), 3.0) : 0;
+        const rim = fresnel * Math.max(0, dot3(N, rimLight)) * 0.18;
 
         const base = hit.res.color;
         r = clamp(base[0] * lighting + 255 * spec + 245 * rim + warmLight * 28, 0, 255);
@@ -1948,9 +2143,9 @@ export function buildAxolotlShelterScene(shotIndex, phase = 0.5) {
 
 export function buildRenderTasks() {
   const studioCam = {
-    ro: v3(0, 0.20, 2.48),
+    ro: v3(0, 0.22, 2.96),
     ta: v3(0, 0.05, 0),
-    fov: 1.94,
+    fov: 2.38,
     bgTop: [186, 230, 253],
     bgBot: [240, 249, 255],
     floorY: -0.68,
@@ -2098,20 +2293,20 @@ export function buildRenderTasks() {
               theme: "steve",
               heldItem: "pickaxe"
             }),
-          { ...studioCam, ro: v3(0, 0.22, 2.42), ta: v3(0, 0.06, 0) }
+          { ...studioCam, ro: v3(0, 0.24, 2.88), ta: v3(0, 0.06, 0) }
         )
     });
   }
 
   // 4. Classic Minecraft Asset Library Thumbnails (6 Characters/Mobs + 8 Voxel Blocks/Items)
-  const libCharCam = { ...studioCam, ro: v3(0, 0.22, 2.45), ta: v3(0, 0.06, 0) };
+  const libCharCam = { ...studioCam, ro: v3(0, 0.24, 2.92), ta: v3(0, 0.06, 0) };
   const charPresets = [
-    ["lib_char_steve.png", (p) => evalMinecraftAvatarSDF(p, { yaw: 0.38, armRPitch: -0.68, theme: "steve", heldItem: "pickaxe" })],
-    ["lib_char_alex.png", (p) => evalMinecraftAvatarSDF(p, { yaw: -0.38, armRPitch: -0.78, theme: "alex", heldItem: "lantern" })],
-    ["lib_char_knight.png", (p) => evalMinecraftAvatarSDF(p, { yaw: 0.38, armRPitch: -0.68, theme: "knight", heldItem: "sword" })],
-    ["lib_char_hoodie.png", (p) => evalMinecraftAvatarSDF(p, { yaw: -0.36, armRPitch: -0.55, theme: "hoodie", expression: "happy", heldItem: "none" })],
-    ["lib_mob_creeper.png", (p) => evalCreeperSDF(p, { pos: v3(0, -0.25, 0), yaw: 0.38 })],
-    ["lib_mob_enderman.png", (p) => evalEndermanSDF(p, { pos: v3(0, -0.02, 0), yaw: -0.35, carriesGrass: true })]
+    ["lib_char_steve.png", (p) => evalMinecraftAvatarSDF(p, { yaw: 0.42, armLPitch: 0.18, armRPitch: -0.62, legLPitch: -0.18, legRPitch: 0.18, theme: "steve", heldItem: "pickaxe" })],
+    ["lib_char_alex.png", (p) => evalMinecraftAvatarSDF(p, { yaw: -0.40, armLPitch: -0.24, armRPitch: 0.24, legLPitch: 0.20, legRPitch: -0.20, theme: "alex", heldItem: "none" })],
+    ["lib_char_knight.png", (p) => evalMinecraftAvatarSDF(p, { yaw: 0.40, armLPitch: 0.15, armRPitch: -0.62, theme: "knight", heldItem: "sword" })],
+    ["lib_char_hoodie.png", (p) => evalMinecraftAvatarSDF(p, { yaw: -0.38, armLPitch: -0.22, armRPitch: 0.18, theme: "hoodie", expression: "smile", heldItem: "none" })],
+    ["lib_mob_creeper.png", (p) => evalCreeperSDF(p, { pos: v3(0, -0.25, 0), yaw: 0.40 })],
+    ["lib_mob_enderman.png", (p) => evalEndermanSDF(p, { pos: v3(0, -0.02, 0), yaw: -0.36, carriesGrass: true })]
   ];
   for (const [fname, fn] of charPresets) {
     tasks.push({ name: fname, w: 240, h: 300, run: () => render3DViewport(240, 300, fn, libCharCam) });
