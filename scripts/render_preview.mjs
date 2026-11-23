@@ -553,13 +553,16 @@ export function evalMinecraftBlockSDF(pWorld, cfg = {}) {
   }
 
   if (type === "redstone-lamp") {
-    const isFrame = ux <= 1 || ux >= 14 || uy <= 1 || uy >= 14 || uz <= 1 || uz >= 14;
-    if (isFrame) {
+    const eX = ux <= 1 || ux >= 14 ? 1 : 0;
+    const eY = uy <= 1 || uy >= 14 ? 1 : 0;
+    const eZ = uz <= 1 || uz >= 14 ? 1 : 0;
+    if (eX + eY + eZ >= 2) {
       return { d: dBox * scale, color: [68, 44, 28], roughness: 0.42, emissive: 0 };
     }
     const lit = cfg.lit !== false;
-    const base = lit ? [251, 191, 36] : [120, 72, 38];
-    return { d: dBox * scale, color: shadeTexel(base, noise * 0.5), roughness: 0.2, emissive: lit ? 0.72 : 0 };
+    const isCross = (ux === 7 || ux === 8) && (uy === 7 || uy === 8);
+    const base = lit ? (isCross ? [254, 249, 195] : [251, 191, 36]) : [120, 72, 38];
+    return { d: dBox * scale, color: shadeTexel(base, noise * 0.4), roughness: 0.16, emissive: lit ? 0.78 : 0 };
   }
 
   if (type === "sticky-piston") {
@@ -2367,14 +2370,177 @@ export function buildRenderTasks() {
     }
   }
 
+  // 6. Three 16-Frame Pure Voxel Block & Item Seamless Loops (280x220 each)
+  for (let f = 0; f < 16; f++) {
+    const phase = f / 16;
+    const fStr = String(f).padStart(2, "0");
+
+    // Loop A: Hinged Chest opening + popping spinning extruded 16x16x1 Diamond Pickaxe & Sword
+    tasks.push({
+      name: `objloop_chest_${fStr}.png`,
+      w: 280,
+      h: 220,
+      run: () => {
+        const openT = Math.sin(phase * Math.PI);
+        const riseY = mix(-0.22, 0.32, smoothstep(0.08, 0.82, openT));
+        const spin = phase * Math.PI * 2;
+        return render3DViewport(
+          280,
+          220,
+          (p) => {
+            const chest = evalMinecraftBlockSDF(p, {
+              pos: v3(0, -0.40, -0.04),
+              yaw: -0.38,
+              scale: 0.92,
+              type: "chest-hinged",
+              lidAngle: openT * 0.72
+            });
+            const pPick = rotY(rotZ(sub3(p, v3(-0.22 * openT, riseY, 0.18)), 0.18), spin);
+            const pick = evalVoxelSprite16x16(pPick, PICKAXE_SPRITE_16, 0.025, 0.018);
+            const pSword = rotY(rotZ(sub3(p, v3(0.22 * openT, riseY + 0.03, 0.18)), -0.18), -spin);
+            const sword = evalVoxelSprite16x16(pSword, SWORD_SPRITE_16, 0.025, 0.018);
+            let best = chest;
+            if (openT > 0.14 && pick.d < best.d) best = { ...pick, emissive: 0.22 };
+            if (openT > 0.14 && sword.d < best.d) best = { ...sword, emissive: 0.22 };
+            return best;
+          },
+          {
+            ro: v3(0.10, 0.34, 2.22),
+            ta: v3(0, -0.02, 0),
+            fov: 2.05,
+            bgTop: [125, 211, 252],
+            bgBot: [240, 249, 255],
+            floorY: -0.68,
+            floorType: "oak",
+            warmLight: 0.25 * openT
+          }
+        );
+      }
+    });
+
+    // Loop B: Sticky Piston pushing glowing 16x16x16 Diamond Ore to trigger Redstone Lamp
+    tasks.push({
+      name: `objloop_piston_${fStr}.png`,
+      w: 280,
+      h: 220,
+      run: () => {
+        const wave = Math.sin(phase * Math.PI);
+        const ext = smoothstep(0.1, 0.85, wave) * 0.65;
+        const lit = ext > 0.35;
+        return render3DViewport(
+          280,
+          220,
+          (p) => {
+            const piston = evalMinecraftBlockSDF(p, {
+              pos: v3(-0.34, -0.36, 0.04),
+              yaw: 0.38,
+              scale: 0.78,
+              type: "sticky-piston",
+              extend: ext
+            });
+            const ore = evalMinecraftBlockSDF(p, {
+              pos: v3(-0.34, 0.18 + ext * 0.28, 0.04),
+              yaw: 0.38,
+              scale: 0.68,
+              type: "diamond-ore"
+            });
+            const lamp = evalMinecraftBlockSDF(p, {
+              pos: v3(0.36, -0.32, 0.04),
+              yaw: -0.35,
+              scale: 0.84,
+              type: "redstone-lamp",
+              lit
+            });
+            const dWire = sdBox(sub3(p, v3(0, -0.66, 0.24)), v3(0.38, 0.018, 0.045));
+            let best = piston.d < ore.d ? piston : ore;
+            if (lamp.d < best.d) best = lamp;
+            if (dWire < best.d) {
+              best = {
+                d: dWire,
+                color: lit ? [248, 58, 58] : [128, 28, 28],
+                roughness: 0.2,
+                emissive: lit ? 0.85 : 0.15
+              };
+            }
+            return best;
+          },
+          {
+            ro: v3(0, 0.38, 2.18),
+            ta: v3(0, -0.06, 0),
+            fov: 2.05,
+            bgTop: [22, 30, 48],
+            bgBot: lit ? [78, 56, 44] : [38, 48, 68],
+            floorY: -0.68,
+            floorType: "stone",
+            warmLight: lit ? 0.45 : 0.0
+          }
+        );
+      }
+    });
+
+    // Loop C: Primed 16x16x16 TNT Block flashing white, swelling, and bursting into cubic voxel smoke
+    tasks.push({
+      name: `objloop_tnt_${fStr}.png`,
+      w: 280,
+      h: 220,
+      run: () => {
+        const exploded = phase >= 0.68;
+        const fuseP = clamp(phase / 0.68, 0, 1);
+        const isFlash = !exploded && (f % 3 === 1 || f === 9 || f === 10);
+        const swell = 0.92 + fuseP * 0.22;
+        const burst = clamp((phase - 0.68) / 0.32, 0, 1);
+        return render3DViewport(
+          280,
+          220,
+          (p) => {
+            if (!exploded) {
+              return evalMinecraftBlockSDF(p, {
+                pos: v3(0, -0.30, 0.04),
+                yaw: 0.48 + fuseP * 0.12,
+                scale: swell,
+                type: "tnt-block",
+                flashWhite: isFlash
+              });
+            }
+            const rSpread = mix(0.14, 0.46, burst);
+            const sSize = mix(0.15, 0.07, burst);
+            const cubes = [
+              sdBox(sub3(p, v3(-rSpread, -0.18 + burst * 0.22, 0.08)), v3(sSize, sSize, sSize)),
+              sdBox(sub3(p, v3(rSpread, -0.14 + burst * 0.26, -0.06)), v3(sSize * 0.9, sSize * 0.9, sSize * 0.9)),
+              sdBox(sub3(p, v3(0.04, 0.02 + burst * 0.32, 0.12)), v3(sSize * 1.05, sSize * 1.05, sSize * 1.05)),
+              sdBox(sub3(p, v3(-0.12, -0.38, -rSpread * 0.8)), v3(sSize * 0.85, sSize * 0.85, sSize * 0.85)),
+              sdBox(sub3(p, v3(0.18, -0.36, rSpread * 0.8)), v3(sSize * 0.85, sSize * 0.85, sSize * 0.85))
+            ];
+            return {
+              d: Math.min(...cubes),
+              color: burst < 0.25 ? [254, 240, 138] : [241, 245, 249],
+              roughness: 0.28,
+              emissive: burst < 0.25 ? 0.75 : 0.25
+            };
+          },
+          {
+            ro: v3(0, 0.34, 2.08),
+            ta: v3(0, -0.16, 0),
+            fov: 2.05,
+            bgTop: exploded && burst < 0.3 ? [127, 29, 29] : [30, 41, 59],
+            bgBot: [51, 65, 85],
+            floorY: -0.68,
+            floorType: "stone"
+          }
+        );
+      }
+    });
+  }
+
   return tasks;
 }
 
-export async function renderRawPanelSetParallel(tmpDir, force = false) {
+export async function renderRawPanelSetParallel(tmpDir, force = false, filterPrefix = "") {
   fs.mkdirSync(tmpDir, { recursive: true });
   const allTasks = buildRenderTasks();
   const pendingIndices = [];
   for (let i = 0; i < allTasks.length; i++) {
+    if (filterPrefix && !allTasks[i].name.startsWith(filterPrefix)) continue;
     const outPath = path.join(tmpDir, allTasks[i].name);
     if (force || !fs.existsSync(outPath) || fs.statSync(outPath).size <= 1000) {
       pendingIndices.push(i);
@@ -2485,6 +2651,33 @@ export function buildBoardsManifest(rawDir) {
         { raw: "lib_obj_sword.png", out: path.join(libObjDir, "item_diamond_sword.png"), labelZh: "像素钻石剑", labelEn: "Diamond Sword" }
       ]
     },
+    heroReel: {
+      gifPath: path.join(showcaseDir, "minecraft_shorts_reel.gif"),
+      mp4Path: path.join(showcaseDir, "minecraft_shorts_reel.mp4"),
+      sources: [
+        path.join(creeperDir, "diamond_creeper_ambush.mp4"),
+        path.join(cozyDir, "cozy_lantern_build.mp4"),
+        path.join(tntDir, "pro_builder_vs_noob_tnt.mp4"),
+        path.join(endermanDir, "enderman_block_heist.mp4")
+      ]
+    },
+    objectLoops: [
+      {
+        prefix: "objloop_chest",
+        gifPath: path.join(showcaseDir, "chest_loot_loop.gif"),
+        mp4Path: path.join(showcaseDir, "chest_loot_loop.mp4")
+      },
+      {
+        prefix: "objloop_piston",
+        gifPath: path.join(showcaseDir, "piston_ore_loop.gif"),
+        mp4Path: path.join(showcaseDir, "piston_ore_loop.mp4")
+      },
+      {
+        prefix: "objloop_tnt",
+        gifPath: path.join(showcaseDir, "tnt_blast_loop.gif"),
+        mp4Path: path.join(showcaseDir, "tnt_blast_loop.mp4")
+      }
+    ],
     cases: [
       {
         prefix: "creeper",
@@ -2587,13 +2780,15 @@ if (!isMainThread && workerData) {
   const isMain = process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1];
   if (isMain) {
     const force = process.argv.includes("--force");
+    const loopsOnly = process.argv.includes("--loops-only");
     const rawDir = path.join(ROOT, "tmp", "raw_panels");
-    console.log("Rendering 3D Minecraft voxel turnaround, object/mob panels, drift comparison, and 9:16 keyframes across worker threads...");
-    await renderRawPanelSetParallel(rawDir, force);
+    console.log("Rendering 3D Minecraft voxel panels across worker threads...");
+    await renderRawPanelSetParallel(rawDir, force, loopsOnly ? "objloop_" : "");
     const manifest = buildBoardsManifest(rawDir);
+    manifest.loopsOnly = loopsOnly;
     const manifestPath = path.join(ROOT, "tmp", "boards_manifest.json");
     fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
-    console.log("Composing bilingual showcase boards, contact sheets, GIFs, and MP4s...");
+    console.log("Composing animated loops, hero reel, showcase boards, GIFs, and MP4s...");
     execFileSync(
       "powershell.exe",
       ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", path.join(__dirname, "compose_boards.ps1"), "-ManifestPath", manifestPath],

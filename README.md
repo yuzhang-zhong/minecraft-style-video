@@ -1,105 +1,98 @@
-# minecraft-style-video
+<div align="center">
 
-**English** · [简体中文](README.zh-CN.md) · [繁體中文](docs/i18n/README.zh-TW.md) · [日本語](docs/i18n/README.ja.md) · [한국어](docs/i18n/README.ko.md) · [Español](docs/i18n/README.es.md) · [Français](docs/i18n/README.fr.md) · [Deutsch](docs/i18n/README.de.md) · [Português](docs/i18n/README.pt-BR.md) · [Русский](docs/i18n/README.ru.md)
+<img src="assets/icon.svg" width="108" height="108" alt="Minecraft Style Video icon" />
 
-Generate Minecraft-style voxel character, mob, and block short videos with locked `8x8x8` and `16x16x16` pixel-grid geometry, 9:16 storyboards, and model-specific prompts.
+# Minecraft Style Video
 
-[Quick start](#quick-start) · [6 video examples](#six-916-short-video-examples) · [Asset library](#classic-minecraft-asset-library) · [CLI tools](#command-line-tools) · [Skill workflow](SKILL.md)
+Plan 9:16 Minecraft voxel shorts: lock `8x8x8` character and `16x16x16` block proportions, compile shot-by-shot prompts, and preview the motion locally.
 
-Generic "Minecraft character" or "Minecraft block" prompts often cause video generators to grow five human fingers on the hands, smudge `16x16` pixel grids into smooth clay, turn pickaxes into round metal rods, or round the head into a Roblox cylinder with Lego claws. `minecraft-style-video` locks canonical Minecraft proportions before writing motion prompts: a sharp `8x8x8` cubic head with a `+0.5px` 3D outer skin shell, an `8x12x4` rectangular prism torso, `4x12x4` (Steve) or `3x12x4` (Alex) arms ending in flat square hands, `16x16x16` nearest-neighbor blocks, `14x14x14` hinged chests, and `16x16x1` extruded pixel tools.
+[![Agent Skill](https://img.shields.io/badge/Skill-SKILL.md-10b981?style=flat-square)](SKILL.md)
+[![Node.js 18+ for the CLI](https://img.shields.io/badge/Node.js-18%2B-268354?style=flat-square)](#quick-start)
+[![MIT license](https://img.shields.io/badge/License-MIT-2563eb?style=flat-square)](LICENSE)
 
-![minecraft-style-video five-step workflow](docs/pipeline.svg)
+**[Animated examples](#animated-examples)** · [Block & item loops](#voxel-block-and-item-loops) · [Quick start](#quick-start) · [Skill guide](SKILL.md)
+
+**English** · [简体中文](README.zh-CN.md) · [More languages](#languages)
+
+</div>
+
+[![Four synchronized 9:16 Minecraft voxel short previews: diamond cave Creeper ambush, cozy lantern cabin build, Diamond Pro vs. Noob TNT, and Enderman grass block heist](assets/showcase/minecraft_shorts_reel.gif)](assets/showcase/minecraft_shorts_reel.mp4)
+
+## Animated examples
+
+Each package plans a 15-second, four-shot vertical short. The **4-second GIFs and MP4s** below are local 3D voxel previews for checking framing, pixel-grid proportions, and shot transitions. Model names indicate the compiled prompt format; run those prompts in an external video model for finished diffusion clips. Select any animation to open its MP4 with audio.
+
+| 01 · Diamond Creeper (`Kling`) | 02 · Cozy Lantern Cabin (`Seedance`) | 03 · Pro vs. Noob TNT (`Hailuo`) |
+| :---: | :---: | :---: |
+| [<img src="examples/diamond-creeper-ambush/assets/diamond_creeper_ambush.gif" width="235" alt="Play Diamond Creeper Ambush: Steve mines glowing diamond ore before a Creeper flashes white" />](examples/diamond-creeper-ambush/assets/diamond_creeper_ambush.mp4) | [<img src="examples/cozy-lantern-build/assets/cozy_lantern_build.gif" width="235" alt="Play Cozy Lantern Cabin: Alex snaps a crafting table, hinged chest, and warm lantern onto a grass block cabin" />](examples/cozy-lantern-build/assets/cozy_lantern_build.mp4) | [<img src="examples/pro-builder-vs-noob-tnt/assets/pro_builder_vs_noob_tnt.gif" width="235" alt="Play Pro vs Noob TNT: Noob slams a TNT block between himself and a Diamond-Armored builder" />](examples/pro-builder-vs-noob-tnt/assets/pro_builder_vs_noob_tnt.mp4) |
+| Steve cracks `16x16x16` diamond ore to reveal a swelling Creeper behind the block.<br>[MP4](examples/diamond-creeper-ambush/assets/diamond_creeper_ambush.mp4) · [Storyboard](examples/diamond-creeper-ambush/assets/storyboard_contact_sheet.en.png) · [Prompts](examples/diamond-creeper-ambush/) | Isometric cabin build transitioning from daylight placement to warm BSL lantern light.<br>[MP4](examples/cozy-lantern-build/assets/cozy_lantern_build.mp4) · [Storyboard](examples/cozy-lantern-build/assets/cozy_storyboard_sheet.en.png) · [Prompts](examples/cozy-lantern-build/) | Primed `TNT` flashes white and swells before ending on a synchronized deadpan stare.<br>[MP4](examples/pro-builder-vs-noob-tnt/assets/pro_builder_vs_noob_tnt.mp4) · [Storyboard](examples/pro-builder-vs-noob-tnt/assets/tnt_storyboard_sheet.en.png) · [Prompts](examples/pro-builder-vs-noob-tnt/) |
+| **04 · Redstone Piston Chain (`Wan`)** | **05 · Enderman Grass Heist (`Sora`)** | **06 · Rainy Pink Axolotl (`Runway`)** |
+| [<img src="examples/redstone-chain-asmr/assets/redstone_chain_asmr.gif" width="235" alt="Play Redstone Piston Chain: sticky pistons push diamond blocks to light a Redstone Lamp cascade" />](examples/redstone-chain-asmr/assets/redstone_chain_asmr.mp4) | [<img src="examples/enderman-block-heist/assets/enderman_block_heist.gif" width="235" alt="Play Enderman Grass Heist: a tall Enderman steals a grass block and vibrates on eye contact" />](examples/enderman-block-heist/assets/enderman_block_heist.mp4) | [<img src="examples/axolotl-rainy-shelter/assets/axolotl_rainy_shelter.gif" width="235" alt="Play Rainy Pink Axolotl: a hoodie avatar shelters a shivering pink axolotl with a warm lantern" />](examples/axolotl-rainy-shelter/assets/axolotl_rainy_shelter.mp4) |
+| Sticky pistons snap diamond blocks into place and trigger cascading Redstone Lamps.<br>[MP4](examples/redstone-chain-asmr/assets/redstone_chain_asmr.mp4) · [Storyboard](examples/redstone-chain-asmr/assets/redstone_storyboard_sheet.en.png) · [Prompts](examples/redstone-chain-asmr/) | A 3-block Enderman plucks a `Grass Block`, vibrates on eye contact, and teleports away.<br>[MP4](examples/enderman-block-heist/assets/enderman_block_heist.mp4) · [Storyboard](examples/enderman-block-heist/assets/enderman_storyboard_sheet.en.png) · [Prompts](examples/enderman-block-heist/) | Cold pixel rain cuts to warm oak block-light and floating heart particles.<br>[MP4](examples/axolotl-rainy-shelter/assets/axolotl_rainy_shelter.mp4) · [Storyboard](examples/axolotl-rainy-shelter/assets/axolotl_storyboard_sheet.en.png) · [Prompts](examples/axolotl-rainy-shelter/) |
+
+## Voxel block and item loops
+
+For object-only shots (redstone contraptions, loot reveals, or isometric block builds), the skill locks sub-block hinges, emissive ore/lamp texels, and extruded `16x16x1` pixel-art tools so video models do not round off edges or turn blades into smooth metal rods:
+
+| Hinged Chest & `16x16x1` Tools | Sticky Piston & Redstone Lamp | Primed `TNT` & Cubic Smoke |
+| :---: | :---: | :---: |
+| [<img src="assets/showcase/chest_loot_loop.gif" width="255" alt="Animated loop: a 14x14x14 hinged oak chest opens its silver latch and pops a spinning pixel diamond pickaxe and sword" />](assets/showcase/chest_loot_loop.mp4) | [<img src="assets/showcase/piston_ore_loop.gif" width="255" alt="Animated loop: a sticky piston pushes glowing diamond ore upward to light a Redstone Lamp" />](assets/showcase/piston_ore_loop.mp4) | [<img src="assets/showcase/tnt_blast_loop.gif" width="255" alt="Animated loop: a 16x16x16 TNT block flashes white, swells, and bursts into cubic voxel smoke" />](assets/showcase/tnt_blast_loop.mp4) |
+| `14x14x14` oak chest + `2x4` silver latch + stepped pickaxe & sword ([MP4](assets/showcase/chest_loot_loop.mp4)) | `16x16x16` sticky piston + glowing `#4AEDD9` ore + lamp ([MP4](assets/showcase/piston_ore_loop.mp4)) | 4Hz white fuse flash + boxy swell + stepped smoke cubes ([MP4](assets/showcase/tnt_blast_loop.mp4)) |
 
 ## Quick start
 
-Clone the repository into your agent's Skills folder (works with Claude Code, Codex, Cursor, and GitHub Copilot):
+### Use the Agent Skill
+
+Clone into your agent host's skills directory. The path below is for Codex; use `~/.copilot/skills/minecraft-style-video` for GitHub Copilot, or your configured skills folder for Claude Code and Cursor.
 
 ```bash
 git clone https://github.com/yuzhang-zhong/minecraft-style-video.git ~/.codex/skills/minecraft-style-video
 ```
 
-Keep `SKILL.md`, `references/`, `scripts/`, and `templates/` together when copying into another host such as `.agents/skills/minecraft-style-video`. All four CLI scripts require Node.js 18+ and use only the standard library; `ffmpeg` is needed only when re-rendering `.gif` and `.mp4` previews locally.
-
-Invoke `$minecraft-style-video` in your agent:
+Invoke `minecraft-style-video` in your agent:
 
 ```text
 Use $minecraft-style-video to plan a 15-second 9:16 isometric build short where Alex
 snaps a Crafting Table, a hinged Chest, and a glowing Lantern onto a Grass Block cabin
-beside a pink Axolotl. Give me the character & block DNA card, reference prompts, and a 4-shot Kling I2V storyboard.
+beside a pink Axolotl. Give me the block & character DNA card, reference prompts, and a 4-shot Kling I2V storyboard.
 ```
 
-Or pass a broken clip description to patch style drift:
+You can also pass a drifted clip description to generate a prompt patch:
 
 ```text
 My Kling clip of a Minecraft character holding a diamond sword grew five human fingers and turned the blade into smooth metal.
 Rewrite the first-frame prompt, motion prompt, and negative prompt for that shot.
 ```
 
-## Visual preview and anti-drift check
+### Use the CLI
 
-| 3-View Voxel Turnaround (`0° / 45° / 90°`) | Anti-Drift Geometry Check (`× Drift` vs. `✓ Locked`) |
-| :---: | :---: |
-| <img src="assets/showcase/steve_alex_turnaround_sheet.en.png" width="410" alt="Minecraft 3-view character turnaround sheet" /> | <img src="assets/showcase/drift_rescue_comparison.en.png" width="410" alt="Minecraft anti-drift geometry comparison" /> |
-
-<details>
-<summary>Expand full-width voxel block, extruded tool, and mob reference sheet</summary>
-
-![Minecraft voxel blocks, extruded tools, and mobs sheet](assets/showcase/voxel_blocks_and_mobs_sheet.en.png)
-
-</details>
-
-## Six 9:16 short-video examples
-
-Six vertical packages rendered by this repository's local preview pipeline, covering all 6 story templates and 6 target video engines:
-
-| 01 · Diamond Creeper (`Kling`) | 02 · Cozy Lantern Cabin (`Seedance`) | 03 · Pro vs. Noob TNT (`Hailuo`) |
-| :---: | :---: | :---: |
-| <img src="examples/diamond-creeper-ambush/assets/diamond_creeper_ambush.gif" width="165" alt="Diamond Cave Creeper Ambush GIF" /> | <img src="examples/cozy-lantern-build/assets/cozy_lantern_build.gif" width="165" alt="Cozy Lantern Cabin Build GIF" /> | <img src="examples/pro-builder-vs-noob-tnt/assets/pro_builder_vs_noob_tnt.gif" width="165" alt="Pro Builder vs Noob TNT GIF" /> |
-| [Sheet](examples/diamond-creeper-ambush/assets/storyboard_contact_sheet.en.png) · [MP4](examples/diamond-creeper-ambush/assets/diamond_creeper_ambush.mp4) · [Pack](examples/diamond-creeper-ambush/) | [Sheet](examples/cozy-lantern-build/assets/cozy_storyboard_sheet.en.png) · [MP4](examples/cozy-lantern-build/assets/cozy_lantern_build.mp4) · [Pack](examples/cozy-lantern-build/) | [Sheet](examples/pro-builder-vs-noob-tnt/assets/tnt_storyboard_sheet.en.png) · [MP4](examples/pro-builder-vs-noob-tnt/assets/pro_builder_vs_noob_tnt.mp4) · [Pack](examples/pro-builder-vs-noob-tnt/) |
-| **04 · Redstone Piston Chain (`Wan`)** | **05 · Enderman Grass Heist (`Sora`)** | **06 · Rainy Pink Axolotl (`Runway`)** |
-| <img src="examples/redstone-chain-asmr/assets/redstone_chain_asmr.gif" width="165" alt="Redstone Piston Chain ASMR GIF" /> | <img src="examples/enderman-block-heist/assets/enderman_block_heist.gif" width="165" alt="Enderman Grass Block Heist GIF" /> | <img src="examples/axolotl-rainy-shelter/assets/axolotl_rainy_shelter.gif" width="165" alt="Rainy Night Pink Axolotl GIF" /> |
-| [Sheet](examples/redstone-chain-asmr/assets/redstone_storyboard_sheet.en.png) · [MP4](examples/redstone-chain-asmr/assets/redstone_chain_asmr.mp4) · [Pack](examples/redstone-chain-asmr/) | [Sheet](examples/enderman-block-heist/assets/enderman_storyboard_sheet.en.png) · [MP4](examples/enderman-block-heist/assets/enderman_block_heist.mp4) · [Pack](examples/enderman-block-heist/) | [Sheet](examples/axolotl-rainy-shelter/assets/axolotl_storyboard_sheet.en.png) · [MP4](examples/axolotl-rainy-shelter/assets/axolotl_rainy_shelter.mp4) · [Pack](examples/axolotl-rainy-shelter/) |
-
-## Classic Minecraft asset library
-
-Pre-rendered in [`assets/library/catalog.json`](assets/library/catalog.json) and documented in [`references/classic-minecraft-catalog.md`](references/classic-minecraft-catalog.md) ([character lineup](assets/showcase/classic_characters_lineup.en.png) · [block & tool atlas](assets/showcase/classic_objects_atlas.en.png)):
-
-| Classic Steve | Slim Alex | Diamond Knight | Cozy Hoodie | Creeper | Enderman |
-| :---: | :---: | :---: | :---: | :---: | :---: |
-| <img src="assets/library/characters/char_steve.png" width="112" alt="Classic Steve" /> | <img src="assets/library/characters/char_alex.png" width="112" alt="Slim Alex" /> | <img src="assets/library/characters/char_knight.png" width="112" alt="Diamond Knight" /> | <img src="assets/library/characters/char_hoodie.png" width="112" alt="Cozy Hoodie" /> | <img src="assets/library/characters/mob_creeper.png" width="112" alt="Creeper" /> | <img src="assets/library/characters/mob_enderman.png" width="112" alt="Enderman holding Grass Block" /> |
-
-| Grass Block | Diamond Ore | TNT Block | Crafting Table | Hinged Chest | Sticky Piston | Pickaxe | Sword |
-| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| <img src="assets/library/objects/block_grass.png" width="82" alt="Grass Block" /> | <img src="assets/library/objects/block_diamond_ore.png" width="82" alt="Diamond Ore" /> | <img src="assets/library/objects/block_tnt.png" width="82" alt="TNT Block" /> | <img src="assets/library/objects/block_crafting_table.png" width="82" alt="Crafting Table" /> | <img src="assets/library/objects/prop_chest.png" width="82" alt="Hinged Chest" /> | <img src="assets/library/objects/prop_piston.png" width="82" alt="Sticky Piston" /> | <img src="assets/library/objects/item_diamond_pickaxe.png" width="82" alt="Extruded Diamond Pickaxe" /> | <img src="assets/library/objects/item_diamond_sword.png" width="82" alt="Extruded Diamond Sword" /> |
-
-## Command-line tools
-
-- [`scripts/voxel_spec.mjs`](scripts/voxel_spec.mjs): generate a Character, Mob, and Voxel Block DNA card with 3-view turnaround and isometric object prompts.
-- [`scripts/shot_compiler.mjs`](scripts/shot_compiler.mjs): compile 15s or 30s 9:16 storyboards and I2V/T2V prompts for `kling`, `seedance`, `hailuo`, `wan`, `sora`, and `runway`.
-- [`scripts/drift_check.mjs`](scripts/drift_check.mjs): check draft prompts for human fingers, smooth tools, bilinear blur, Roblox/Lego drift, and multi-verb overload, then output a patched prompt.
-- [`scripts/render_preview.mjs`](scripts/render_preview.mjs): render local 3D turnaround sheets, asset library thumbnails, storyboard contact sheets, and `.gif` / `.mp4` animatics.
+Run these from the repository root on Node.js 18+ (standard library only, no `npm install` or API keys required):
 
 ```bash
 node scripts/voxel_spec.mjs --archetype steve-miner --object diamond-ore --held-item diamond-pickaxe --shader bsl-sunlight --name "Steve" --lang en
 node scripts/shot_compiler.mjs --template diamond-creeper-ambush --duration 15 --engine kling --shader rtx-emissive --lang en
 node scripts/drift_check.mjs --prompt "A cute Minecraft boy holding a round metal sword with five fingers mines ore and runs away" --engine kling --mode t2v --lang en
-node scripts/validate_skill.mjs
 ```
 
-## Scope, limits, and references
+The three commands output a voxel DNA card with turnaround/block prompts, a four-shot 9:16 storyboard, and a corrected prompt that removes human fingers, round metal tools, and multi-verb clip overload.
 
-- **Local preview fixtures vs. cloud video models**: the checked-in `.png`, `.gif`, and `.mp4` files are deterministic local 3D voxel previews rendered by `scripts/render_preview.mjs` to lock composition and verify prompts. Final diffusion video generation requires an external model (Kling, Seedance/Jimeng, Hailuo, Wan, Sora, or Runway).
-- **Consistency and pacing**: generate a 3-view turnaround sheet and static shot keyframes before running First-Frame I2V, keep creativity moderate (`0.35` to `0.45` in Kling) so `16x16` pixel grids stay sharp, and limit each 4 to 5 second clip to one primary action.
-- **Supported languages**: agent responses and CLI `--lang` output support `en`, `zh`, `zh-tw`, `ja`, `ko`, `es`, `fr`, `de`, `pt`, and `ru`.
-- **License and trademark**: MIT ([LICENSE](LICENSE)). Independent open-source toolkit, unaffiliated with Mojang Studios or Microsoft.
+## CLI scripts, limits, and references
 
-Reference guides:
+Before running multi-shot image-to-video (I2V), lock the character and block proportions (`8x8x8` cubic head, `8x12x4` torso, `4x12x4` Steve or `3x12x4` Alex flat-square arms, `16x16x16` unfiltered nearest-neighbor blocks, and `16x16x1` extruded tools). Start multi-shot sequences from a [three-view turnaround](assets/showcase/steve_alex_turnaround_sheet.en.png), keep video creativity moderate (`0.35` to `0.45` in Kling) so pixel grids stay crisp, and limit each 4 to 5 second clip to one main action. See the [anti-drift comparison](assets/showcase/drift_rescue_comparison.en.png) and [five-step workflow diagram](docs/pipeline.svg) for common failure modes.
 
-- [Core workflow and eight voxel invariants (`SKILL.md`)](SKILL.md)
-- [Voxel geometry, blocks, mobs, and shaders (`references/voxel-geometry-blocks-and-shaders.md`)](references/voxel-geometry-blocks-and-shaders.md)
-- [Classic Minecraft character and block catalog (`references/classic-minecraft-catalog.md`)](references/classic-minecraft-catalog.md)
-- [Model prompt playbook (`references/model-prompt-playbook.md`)](references/model-prompt-playbook.md)
-- [Drift diagnosis and prompt patches (`references/rescue-and-anti-drift.md`)](references/rescue-and-anti-drift.md)
-- [9:16 pacing, isometric angles, and audio cues (`references/short-video-beats-and-audio.md`)](references/short-video-beats-and-audio.md)
-- [Six short-video story and build templates (`references/viral-archetypes-catalog.md`)](references/viral-archetypes-catalog.md)
+| Script | Output |
+| --- | --- |
+| [`voxel_spec.mjs`](scripts/voxel_spec.mjs) | Character, mob, and block DNA card with three-view turnaround and isometric block prompts. |
+| [`shot_compiler.mjs`](scripts/shot_compiler.mjs) | A 9:16 beat sheet and I2V/T2V prompts for Kling, Seedance, Hailuo, Wan, Sora, and Runway. |
+| [`drift_check.mjs`](scripts/drift_check.mjs) | Diagnostic report and patched prompt for human fingers, smooth rods, blurry texels, or action overload. |
+| [`render_preview.mjs`](scripts/render_preview.mjs) | Local 3D voxel turnarounds, contact sheets, object loops, GIFs, and MP4s (uses PowerShell `System.Drawing` and `ffmpeg` on Windows). |
 
+[Skill guide (`SKILL.md`)](SKILL.md) · [Voxel geometry, blocks, and shaders](references/voxel-geometry-blocks-and-shaders.md) · [Model prompt playbook](references/model-prompt-playbook.md) · [Drift fixes](references/rescue-and-anti-drift.md) · [Pacing and audio](references/short-video-beats-and-audio.md) · [Story and build templates](references/viral-archetypes-catalog.md) · [Preset catalog](references/classic-minecraft-catalog.md)
+
+## Languages
+
+Agent replies and CLI `--lang` output support `en`, `zh`, `zh-tw`, `ja`, `ko`, `es`, `fr`, `de`, `pt`, and `ru`.
+
+**English** · [简体中文](README.zh-CN.md) · [繁體中文](docs/i18n/README.zh-TW.md) · [日本語](docs/i18n/README.ja.md) · [한국어](docs/i18n/README.ko.md) · [Español](docs/i18n/README.es.md) · [Français](docs/i18n/README.fr.md) · [Deutsch](docs/i18n/README.de.md) · [Português](docs/i18n/README.pt-BR.md) · [Русский](docs/i18n/README.ru.md)
+
+[MIT License](LICENSE). Independent open-source project, not affiliated with or endorsed by Mojang Studios or Microsoft.

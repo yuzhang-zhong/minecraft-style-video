@@ -67,6 +67,7 @@ function Draw-MinecraftTagBubble($g, [float]$cx, [float]$topY, [string]$text, $f
   $g.DrawString($text, $font, $bWhite, $tx, ($by + 4))
 }
 
+if (-not $manifest.loopsOnly) {
 # 1. Clean 3-View Turnaround Sheet (.zh.png and .en.png)
 $tInfo = $manifest.turnaround
 foreach ($lang in @("zh", "en")) {
@@ -339,4 +340,31 @@ foreach ($case in $manifest.cases) {
   & ffmpeg -y -loglevel error -framerate 6 -i $inPattern -i $palPath -lavfi "paletteuse=dither=bayer" $case.gifPath
   & ffmpeg -y -loglevel error -framerate 6 -i $inPattern -f lavfi -i "sine=frequency=440:beep_factor=3:duration=4" -c:v libx264 -pix_fmt yuv420p -vf "fps=24" -c:a aac -b:a 96k -shortest $case.mp4Path
 }
-Write-Output "All bilingual .zh.png / .en.png boards, object sheets, keyframes, GIFs, and MP4s generated!"
+} # end if (-not $manifest.loopsOnly)
+
+# 5. Pure Voxel Block & Item Seamless Loops (GIF + MP4)
+if ($manifest.objectLoops) {
+  foreach ($lp in $manifest.objectLoops) {
+    $inPat = Join-Path $rawDir ($lp.prefix + "_%02d.png")
+    $pal = Join-Path $rawDir ($lp.prefix + "_pal.png")
+    & ffmpeg -y -loglevel error -framerate 8 -i $inPat -vf "palettegen=max_colors=192" $pal
+    & ffmpeg -y -loglevel error -framerate 8 -i $inPat -i $pal -lavfi "paletteuse=dither=bayer" $lp.gifPath
+    & ffmpeg -y -loglevel error -framerate 8 -i $inPat -f lavfi -i "sine=frequency=520:beep_factor=2:duration=2" -c:v libx264 -pix_fmt yuv420p -vf "fps=24" -c:a aac -b:a 96k -shortest $lp.mp4Path
+  }
+}
+
+# 6. Hero Widescreen 4-Up Synchronized Animated Showreel (GIF + MP4)
+if ($manifest.heroReel -and $manifest.heroReel.sources.Count -eq 4) {
+  $hr = $manifest.heroReel
+  $s0 = $hr.sources[0]
+  $s1 = $hr.sources[1]
+  $s2 = $hr.sources[2]
+  $s3 = $hr.sources[3]
+  $reelPal = Join-Path $rawDir "hero_reel_pal.png"
+  $stackFilter = "[0:v]scale=220:392,pad=232:412:6:10:color=#0f172a[v0];[1:v]scale=220:392,pad=232:412:6:10:color=#0f172a[v1];[2:v]scale=220:392,pad=232:412:6:10:color=#0f172a[v2];[3:v]scale=220:392,pad=232:412:6:10:color=#0f172a[v3];[v0][v1][v2][v3]hstack=inputs=4,fps=24[vmp4]"
+  & ffmpeg -y -loglevel error -i $s0 -i $s1 -i $s2 -i $s3 -filter_complex $stackFilter -map "[vmp4]" -map 0:a -c:v libx264 -pix_fmt yuv420p -c:a aac -b:a 96k -shortest $hr.mp4Path
+  & ffmpeg -y -loglevel error -i $hr.mp4Path -vf "fps=8,palettegen=max_colors=192" $reelPal
+  & ffmpeg -y -loglevel error -i $hr.mp4Path -i $reelPal -lavfi "fps=8[x];[x][1:v]paletteuse=dither=bayer" $hr.gifPath
+}
+
+Write-Output "All bilingual .zh.png / .en.png boards, object loops, hero reel, GIFs, and MP4s generated!"

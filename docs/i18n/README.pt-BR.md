@@ -1,64 +1,65 @@
-# minecraft-style-video
+<div align="center">
+
+<img src="../../assets/icon.svg" width="108" height="108" alt="Minecraft Style Video icon" />
+
+# Minecraft Style Video
+
+Planeje vídeos curtos verticais 9:16 estilo Minecraft: trave proporções voxel `8x8x8` e `16x16x16`, compile prompts por plano e visualize o movimento localmente.
+
+[![Agent Skill](https://img.shields.io/badge/Skill-SKILL.md-10b981?style=flat-square)](../../SKILL.md)
+[![Node.js 18+](https://img.shields.io/badge/Node.js-18%2B-268354?style=flat-square)](#início-rápido)
+[![MIT License](https://img.shields.io/badge/License-MIT-2563eb?style=flat-square)](../../LICENSE)
+
+**[Exemplos animados](#exemplos-animados)** · [Loops de blocos](#loops-de-blocos-e-itens) · [Início rápido](#início-rápido) · [Guia da Skill](../../SKILL.md)
 
 [English](../../README.md) · [简体中文](../../README.zh-CN.md) · [繁體中文](README.zh-TW.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [Español](README.es.md) · [Français](README.fr.md) · [Deutsch](README.de.md) · **Português** · [Русский](README.ru.md)
 
-Gere vídeos curtos verticais 9:16 de personagens, criaturas e blocos no estilo Minecraft com geometria voxel `8x8x8` e `16x16x16` travada e prompts específicos por modelo.
+</div>
 
-Prompts genéricos como "personagem de Minecraft minerando diamantes" costumam gerar cinco dedos humanos, texturas borradas, picaretas cilíndricas lisas ou cabeças arredondadas estilo Roblox com garras de Lego. `minecraft-style-video` trava as proporções antes da animação: cabeça cúbica `8x8x8` com camada externa 3D `+0.5px`, tronco `8x12x4`, braços `4x12x4` (Steve) ou `3x12x4` (Alex) com pontas quadradas planas, blocos `16x16x16` nítidos, baús articulados `14x14x14` e ferramentas extrudadas `16x16x1`.
+[![Quatro prévias sincronizadas 9:16 de curtas voxel estilo Minecraft](../../assets/showcase/minecraft_shorts_reel.gif)](../../assets/showcase/minecraft_shorts_reel.mp4)
 
-![Fluxo de trabalho em cinco etapas](../pipeline.svg)
+## Exemplos animados
+
+Cada pacote planeja um curta vertical de 15 segundos com quatro planos. Os **GIFs e MP4s de 4 segundos** abaixo são prévias 3D locais para conferir enquadramento e proporções voxel; clique em qualquer animação para abrir o MP4 com áudio. O vídeo final deve ser gerado em um modelo externo.
+
+| 01 · Diamante & Creeper (`Kling`) | 02 · Cabana com Lampião (`Seedance`) | 03 · Pro vs. Noob TNT (`Hailuo`) |
+| :---: | :---: | :---: |
+| [<img src="../../examples/diamond-creeper-ambush/assets/diamond_creeper_ambush.gif" width="235" alt="Case 01" />](../../examples/diamond-creeper-ambush/assets/diamond_creeper_ambush.mp4) | [<img src="../../examples/cozy-lantern-build/assets/cozy_lantern_build.gif" width="235" alt="Case 02" />](../../examples/cozy-lantern-build/assets/cozy_lantern_build.mp4) | [<img src="../../examples/pro-builder-vs-noob-tnt/assets/pro_builder_vs_noob_tnt.gif" width="235" alt="Case 03" />](../../examples/pro-builder-vs-noob-tnt/assets/pro_builder_vs_noob_tnt.mp4) |
+| [MP4](../../examples/diamond-creeper-ambush/assets/diamond_creeper_ambush.mp4) · [Storyboard](../../examples/diamond-creeper-ambush/assets/storyboard_contact_sheet.en.png) · [Prompts](../../examples/diamond-creeper-ambush/) | [MP4](../../examples/cozy-lantern-build/assets/cozy_lantern_build.mp4) · [Storyboard](../../examples/cozy-lantern-build/assets/cozy_storyboard_sheet.en.png) · [Prompts](../../examples/cozy-lantern-build/) | [MP4](../../examples/pro-builder-vs-noob-tnt/assets/pro_builder_vs_noob_tnt.mp4) · [Storyboard](../../examples/pro-builder-vs-noob-tnt/assets/tnt_storyboard_sheet.en.png) · [Prompts](../../examples/pro-builder-vs-noob-tnt/) |
+| **04 · Cadeia de Pistões (`Wan`)** | **05 · Enderman & Bloco de Grama (`Sora`)** | **06 · Axolote na Chuva (`Runway`)** |
+| [<img src="../../examples/redstone-chain-asmr/assets/redstone_chain_asmr.gif" width="235" alt="Case 04" />](../../examples/redstone-chain-asmr/assets/redstone_chain_asmr.mp4) | [<img src="../../examples/enderman-block-heist/assets/enderman_block_heist.gif" width="235" alt="Case 05" />](../../examples/enderman-block-heist/assets/enderman_block_heist.mp4) | [<img src="../../examples/axolotl-rainy-shelter/assets/axolotl_rainy_shelter.gif" width="235" alt="Case 06" />](../../examples/axolotl-rainy-shelter/assets/axolotl_rainy_shelter.mp4) |
+| [MP4](../../examples/redstone-chain-asmr/assets/redstone_chain_asmr.mp4) · [Storyboard](../../examples/redstone-chain-asmr/assets/redstone_storyboard_sheet.en.png) · [Prompts](../../examples/redstone-chain-asmr/) | [MP4](../../examples/enderman-block-heist/assets/enderman_block_heist.mp4) · [Storyboard](../../examples/enderman-block-heist/assets/enderman_storyboard_sheet.en.png) · [Prompts](../../examples/enderman-block-heist/) | [MP4](../../examples/axolotl-rainy-shelter/assets/axolotl_rainy_shelter.mp4) · [Storyboard](../../examples/axolotl-rainy-shelter/assets/axolotl_storyboard_sheet.en.png) · [Prompts](../../examples/axolotl-rainy-shelter/) |
+
+## Loops de blocos e itens
+
+Para planos focados em objetos e mecanismos redstone, a skill preserva dobradiças de baús, minérios emissivos e ferramentas extrudadas `16x16x1` em degraus:
+
+| Baú Articulado & Ferramentas `16x16x1` | Pistão Grudento & Lâmpada Redstone | `TNT` Ativado & Fumaça Cúbica |
+| :---: | :---: | :---: |
+| [<img src="../../assets/showcase/chest_loot_loop.gif" width="255" alt="Chest loot loop" />](../../assets/showcase/chest_loot_loop.mp4) | [<img src="../../assets/showcase/piston_ore_loop.gif" width="255" alt="Sticky piston loop" />](../../assets/showcase/piston_ore_loop.mp4) | [<img src="../../assets/showcase/tnt_blast_loop.gif" width="255" alt="TNT blast loop" />](../../assets/showcase/tnt_blast_loop.mp4) |
+| Baú `14x14x14` + picareta e espada ([MP4](../../assets/showcase/chest_loot_loop.mp4)) | Pistão `16x16x16` + minério brilhante ([MP4](../../assets/showcase/piston_ore_loop.mp4)) | Pulso branco + cubos de fumaça ([MP4](../../assets/showcase/tnt_blast_loop.mp4)) |
 
 ## Início rápido
 
-Clone o repositório na sua pasta local de Skills (compatível com Claude Code, Codex, Cursor e GitHub Copilot):
+Clone na sua pasta local de Skills (compatível com Codex, GitHub Copilot, Claude Code e Cursor):
 
 ```bash
 git clone https://github.com/yuzhang-zhong/minecraft-style-video.git ~/.codex/skills/minecraft-style-video
 ```
 
-Os quatro scripts CLI exigem apenas a biblioteca padrão do Node.js 18+; o `ffmpeg` só é necessário ao renderizar novamente `.gif` e `.mp4` localmente.
-
-```text
-Use $minecraft-style-video para planejar um curta isométrico 9:16 de 15 segundos em que a Alex
-encaixa uma bancada, um baú e um lampião brilhante em uma cabana de blocos de grama ao lado de um axolote rosa, com 4 planos para Kling I2V.
-```
-
-## Prévia visual e 6 exemplos de vídeos curtos
-
-| Referência em 3 vistas (`0° / 45° / 90°`) | Verificação anti-desvio (`× Drift` vs. `✓ Locked`) |
-| :---: | :---: |
-| <img src="../../assets/showcase/steve_alex_turnaround_sheet.en.png" width="410" alt="Turnaround" /> | <img src="../../assets/showcase/drift_rescue_comparison.en.png" width="410" alt="Drift check" /> |
-
-| 01 · Diamante & Creeper (`Kling`) | 02 · Cabana com Lampião (`Seedance`) | 03 · Pro vs. Noob TNT (`Hailuo`) |
-| :---: | :---: | :---: |
-| <img src="../../examples/diamond-creeper-ambush/assets/diamond_creeper_ambush.gif" width="165" alt="Case 01" /> | <img src="../../examples/cozy-lantern-build/assets/cozy_lantern_build.gif" width="165" alt="Case 02" /> | <img src="../../examples/pro-builder-vs-noob-tnt/assets/pro_builder_vs_noob_tnt.gif" width="165" alt="Case 03" /> |
-| [Folha](../../examples/diamond-creeper-ambush/assets/storyboard_contact_sheet.en.png) · [MP4](../../examples/diamond-creeper-ambush/assets/diamond_creeper_ambush.mp4) · [Pacote](../../examples/diamond-creeper-ambush/) | [Folha](../../examples/cozy-lantern-build/assets/cozy_storyboard_sheet.en.png) · [MP4](../../examples/cozy-lantern-build/assets/cozy_lantern_build.mp4) · [Pacote](../../examples/cozy-lantern-build/) | [Folha](../../examples/pro-builder-vs-noob-tnt/assets/tnt_storyboard_sheet.en.png) · [MP4](../../examples/pro-builder-vs-noob-tnt/assets/pro_builder_vs_noob_tnt.mp4) · [Pacote](../../examples/pro-builder-vs-noob-tnt/) |
-| **04 · Cadeia de Pistões (`Wan`)** | **05 · Enderman & Bloco de Grama (`Sora`)** | **06 · Axolote na Chuva (`Runway`)** |
-| <img src="../../examples/redstone-chain-asmr/assets/redstone_chain_asmr.gif" width="165" alt="Case 04" /> | <img src="../../examples/enderman-block-heist/assets/enderman_block_heist.gif" width="165" alt="Case 05" /> | <img src="../../examples/axolotl-rainy-shelter/assets/axolotl_rainy_shelter.gif" width="165" alt="Case 06" /> |
-| [Folha](../../examples/redstone-chain-asmr/assets/redstone_storyboard_sheet.en.png) · [MP4](../../examples/redstone-chain-asmr/assets/redstone_chain_asmr.mp4) · [Pacote](../../examples/redstone-chain-asmr/) | [Folha](../../examples/enderman-block-heist/assets/enderman_storyboard_sheet.en.png) · [MP4](../../examples/enderman-block-heist/assets/enderman_block_heist.mp4) · [Pacote](../../examples/enderman-block-heist/) | [Folha](../../examples/axolotl-rainy-shelter/assets/axolotl_storyboard_sheet.en.png) · [MP4](../../examples/axolotl-rainy-shelter/assets/axolotl_rainy_shelter.mp4) · [Pacote](../../examples/axolotl-rainy-shelter/) |
-
-## Biblioteca clássica de personagens e blocos
-
-Pré-renderizada em [`assets/library/catalog.json`](../../assets/library/catalog.json) e documentada em [`references/classic-minecraft-catalog.md`](../../references/classic-minecraft-catalog.md):
-
-| Classic Steve | Slim Alex | Diamond Knight | Cozy Hoodie | Creeper | Enderman |
-| :---: | :---: | :---: | :---: | :---: | :---: |
-| <img src="../../assets/library/characters/char_steve.png" width="112" alt="Steve" /> | <img src="../../assets/library/characters/char_alex.png" width="112" alt="Alex" /> | <img src="../../assets/library/characters/char_knight.png" width="112" alt="Diamond Knight" /> | <img src="../../assets/library/characters/char_hoodie.png" width="112" alt="Cozy Hoodie" /> | <img src="../../assets/library/characters/mob_creeper.png" width="112" alt="Creeper" /> | <img src="../../assets/library/characters/mob_enderman.png" width="112" alt="Enderman" /> |
-
-| Grass Block | Diamond Ore | TNT Block | Crafting Table | Hinged Chest | Sticky Piston | Pickaxe | Sword |
-| :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
-| <img src="../../assets/library/objects/block_grass.png" width="82" alt="Grass" /> | <img src="../../assets/library/objects/block_diamond_ore.png" width="82" alt="Ore" /> | <img src="../../assets/library/objects/block_tnt.png" width="82" alt="TNT" /> | <img src="../../assets/library/objects/block_crafting_table.png" width="82" alt="Table" /> | <img src="../../assets/library/objects/prop_chest.png" width="82" alt="Chest" /> | <img src="../../assets/library/objects/prop_piston.png" width="82" alt="Piston" /> | <img src="../../assets/library/objects/item_diamond_pickaxe.png" width="82" alt="Pickaxe" /> | <img src="../../assets/library/objects/item_diamond_sword.png" width="82" alt="Sword" /> |
-
-## Ferramentas CLI e escopo
-
-- [`scripts/voxel_spec.mjs`](../../scripts/voxel_spec.mjs): gera fichas DNA de personagens, criaturas e blocos com prompts em 3 vistas e isométricos.
-- [`scripts/shot_compiler.mjs`](../../scripts/shot_compiler.mjs): compila storyboards 9:16 para `kling`, `seedance`, `hailuo`, `wan`, `sora` e `runway`.
-- [`scripts/drift_check.mjs`](../../scripts/drift_check.mjs): verifica dedos humanos, ferramentas cilíndricas, borrão de pixels e excesso de ações.
-- [`scripts/render_preview.mjs`](../../scripts/render_preview.mjs): renderiza localmente pranchas 3D, miniaturas e prévias `.gif` / `.mp4`.
+Ou execute a CLI diretamente no Node.js 18+ sem pacotes externos:
 
 ```bash
 node scripts/voxel_spec.mjs --archetype steve-miner --object diamond-ore --held-item diamond-pickaxe --lang pt
 node scripts/shot_compiler.mjs --template diamond-creeper-ambush --duration 15 --engine kling --lang pt
+node scripts/drift_check.mjs --prompt "A cute Minecraft boy holding a round metal sword with five fingers mines ore and runs away" --engine kling --mode t2v --lang pt
 ```
 
-Os arquivos `.gif` e `.mp4` incluídos são prévias 3D locais determinísticas; a geração final de vídeo exige um modelo externo. Limite cada clipe de 4 a 5 segundos a uma ação principal. Licença MIT ([LICENSE](../../LICENSE)), sem afiliação com a Mojang Studios ou Microsoft. Veja [`SKILL.md`](../../SKILL.md).
+## Scripts, limites e referências
+
+Ancore sequências I2V com uma [prancha em três vistas](../../assets/showcase/steve_alex_turnaround_sheet.en.png) e limite cada clipe de 4 a 5 segundos a uma ação principal ([comparação anti-desvio](../../assets/showcase/drift_rescue_comparison.en.png) · [fluxo de trabalho](../pipeline.svg)).
+
+- [`voxel_spec.mjs`](../../scripts/voxel_spec.mjs) · [`shot_compiler.mjs`](../../scripts/shot_compiler.mjs) · [`drift_check.mjs`](../../scripts/drift_check.mjs) · [`render_preview.mjs`](../../scripts/render_preview.mjs)
+- [Guia da Skill (`SKILL.md`)](../../SKILL.md) · [Geometria voxel e blocos](../../references/voxel-geometry-blocks-and-shaders.md) · [Manual de prompts](../../references/model-prompt-playbook.md) · [Correções de desvio](../../references/rescue-and-anti-drift.md) · [Ritmo e áudio](../../references/short-video-beats-and-audio.md) · [Modelos de roteiro](../../references/viral-archetypes-catalog.md)
+
+[Licença MIT](../../LICENSE). Projeto independente, sem afiliação ou endosso da Mojang Studios ou Microsoft.
