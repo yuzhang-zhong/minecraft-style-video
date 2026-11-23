@@ -48,23 +48,19 @@ $bDarkText = New-Object System.Drawing.SolidBrush((New-Color 30 41 59))
 $bWhite = New-Object System.Drawing.SolidBrush((New-Color 255 255 255))
 $pCardBorder = New-Object System.Drawing.Pen((New-Color 226 232 240), 1.5)
 
-# Authentic Minecraft crisp square tooltip/nameplate style
-$bMcTagFill = New-Object System.Drawing.SolidBrush((New-Color 18 24 36 228))
-$pMcTagBorder = New-Object System.Drawing.Pen((New-Color 74 237 217 210), 1.5)
+# Authentic Minecraft In-Game Chat Bar Strip (top-left translucent charcoal bar, no cyan sci-fi border!)
+$bMcChatBg = New-Object System.Drawing.SolidBrush((New-Color 14 18 24 178))
+$bMcBracket = New-Object System.Drawing.SolidBrush((New-Color 163 230 53))
 
-function Draw-MinecraftTagBubble($g, [float]$cx, [float]$topY, [string]$text, $font) {
+function Draw-MinecraftTagBubble($g, [float]$cx, [float]$topY, [string]$text, $font, [float]$leftX = 14, [float]$barY = 14) {
   if (-not $text) { return }
-  $sz = $g.MeasureString($text, $font)
-  $bw = [Math]::Max(68, [Math]::Ceiling($sz.Width) + 20)
-  $bh = 26
-  $bx = $cx - ($bw / 2)
-  $by = $topY
-
-  $g.FillRectangle($bMcTagFill, $bx, $by, $bw, $bh)
-  $g.DrawRectangle($pMcTagBorder, $bx, $by, $bw, $bh)
-
-  $tx = $bx + ($bw - $sz.Width) / 2
-  $g.DrawString($text, $font, $bWhite, $tx, ($by + 4))
+  $chatLine = "> " + $text
+  $sz = $g.MeasureString($chatLine, $font)
+  $bw = [Math]::Ceiling($sz.Width) + 16
+  $bh = 24
+  $g.FillRectangle($bMcChatBg, $leftX, $barY, $bw, $bh)
+  $g.DrawString(">", $font, $bMcBracket, ($leftX + 6), ($barY + 3))
+  $g.DrawString($text, $font, $bWhite, ($leftX + 19), ($barY + 3))
 }
 
 if (-not $manifest.loopsOnly) {
@@ -285,7 +281,7 @@ foreach ($case in $manifest.cases) {
         $sg.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::AntiAlias
         $sg.TextRenderingHint = [System.Drawing.Text.TextRenderingHint]::ClearTypeGridFit
         $sg.DrawImage($img, 0, 0, 360, 640)
-        Draw-MinecraftTagBubble $sg ($sh.bubbleX * 1.1) ($sh.bubbleY * 1.1) $chatText $fontBub
+        Draw-MinecraftTagBubble $sg 0 0 $chatText $fontBub 14 14
         $shotBmp.Save($sh.savePath, [System.Drawing.Imaging.ImageFormat]::Png)
         $sg.Dispose()
         $shotBmp.Dispose()
@@ -294,7 +290,7 @@ foreach ($case in $manifest.cases) {
       $g.DrawImage($img, ($sx + 6), ($sy + 6), 312, 554)
       $img.Dispose()
 
-      Draw-MinecraftTagBubble $g ($sx + $sh.bubbleX) ($sy + $sh.bubbleY) $chatText $fontBub
+      Draw-MinecraftTagBubble $g 0 0 $chatText $fontBub ($sx + 16) ($sy + 16)
 
       $label = if ($lang -eq "zh") { $sh.labelZh } else { $sh.labelEn }
       $lsz = $g.MeasureString($label, $fontLabel)
@@ -326,7 +322,7 @@ foreach ($case in $manifest.cases) {
     $fg.DrawImage($srcImg, 0, 0, 270, 480)
     $srcImg.Dispose()
 
-    Draw-MinecraftTagBubble $fg ($sh.bubbleX * 0.84) ($sh.bubbleY * 0.84) $sh.chatEn $fBubbleEn
+    Draw-MinecraftTagBubble $fg 0 0 $sh.chatEn $fBubbleEn 10 10
 
     $outFrame = Join-Path $hudDir ("frame_" + $f.ToString("00") + ".png")
     $frameBmp.Save($outFrame, [System.Drawing.Imaging.ImageFormat]::Png)

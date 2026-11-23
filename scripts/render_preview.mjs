@@ -20,6 +20,33 @@ import zlib from "node:zlib";
 import { execFileSync } from "node:child_process";
 import { Worker, isMainThread, parentPort, workerData } from "node:worker_threads";
 import { fileURLToPath } from "node:url";
+import {
+  PICKAXE_16,
+  SWORD_16,
+  DIAMOND_ITEM_16,
+  HEART_16,
+  lookupToolSpriteColor,
+  lookupItemSpriteColor,
+  texStone16,
+  texStoneBricks16,
+  texCobble16,
+  texDirt16,
+  texGrassTop16,
+  texGrassSide16,
+  texOakPlanks16,
+  texDiamondOre16,
+  hasMiningCrack,
+  texTntTop16,
+  texTntSide16,
+  texCraftingTop16,
+  texCraftingSide16,
+  texPistonSide16,
+  texPistonTopSticky16,
+  texRedstoneLamp16,
+  texDiamondBlock16,
+  CREEPER_FACE_8,
+  texCreeperSkin
+} from "./mc_textures.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, "..");
@@ -111,68 +138,23 @@ function shadeTexel(rgb, delta) {
   ];
 }
 
-// ---------- 16x16 Extruded Pixel-Art Tool Sprites ----------
-// "." = empty, "W" = dark oak border, "w" = oak wood stick,
-// "D" = cyan diamond #4AEDD9, "d" = teal diamond border #0891B2, "H" = white-cyan highlight #CFFAFE
-const PICKAXE_SPRITE_16 = [
-  "..........dddd..",
-  "........ddDDDDd.",
-  ".......dDDHHDDd.",
-  "......dDDHdddDd.",
-  ".....dDDd..Wwdd.",
-  ".....dDd..WwWdd.",
-  ".....dd..WwW.dD.",
-  "........WwW..dD.",
-  ".......WwW...dD.",
-  "......WwW....dd.",
-  ".....WwW........",
-  "....WwW.........",
-  "...WwW..........",
-  "..WwW...........",
-  ".WwW............",
-  ".WW............."
-];
+// ---------- 16x16 Extruded Pixel-Art Tool & Item Sprites ----------
+const PICKAXE_SPRITE_16 = PICKAXE_16;
+const SWORD_SPRITE_16 = SWORD_16;
 
-const SWORD_SPRITE_16 = [
-  ".............dd.",
-  "............dDDd",
-  "...........dDHDd",
-  "..........dDHDd.",
-  ".........dDHDd..",
-  "........dDHDd...",
-  ".......dDHDd....",
-  "......dDHDd.....",
-  "...dd.dDDd......",
-  "...dDddDd.......",
-  "....dDDd........",
-  "...WwWdd........",
-  "..WwW.dd........",
-  ".WwW............",
-  "dDd.............",
-  "dd.............."
-];
-
-function spriteCharColor(ch) {
-  if (ch === "W") return [92, 56, 24];
-  if (ch === "w") return [146, 94, 44];
-  if (ch === "D") return [74, 237, 217];
-  if (ch === "d") return [14, 148, 136];
-  if (ch === "H") return [207, 250, 254];
-  return null;
-}
-
-export function evalVoxelSprite16x16(pLocal, spriteRows, pxSize = 0.026, halfThick = 0.018) {
+export function evalVoxelSprite16x16(pLocal, spriteRows, pxSize = 0.026, halfThick = 0.016, mode = "tool") {
   const halfSpan = 8 * pxSize;
   const dBound = sdBox(pLocal, v3(halfSpan + pxSize, halfSpan + pxSize, halfThick + pxSize));
   if (dBound > 0.035) {
-    return { d: dBound, color: [74, 237, 217], roughness: 0.2 };
+    return { d: dBound, color: [51, 224, 208], roughness: 0.2 };
   }
 
   const gx = clamp(Math.floor((pLocal.x + halfSpan) / pxSize), 0, 15);
   const gy = clamp(Math.floor((halfSpan - pLocal.y) / pxSize), 0, 15);
+  const colorFn = mode === "item" ? lookupItemSpriteColor : lookupToolSpriteColor;
 
   let bestD = 1e9;
-  let bestCol = [74, 237, 217];
+  let bestCol = [51, 224, 208];
   for (let dy = -1; dy <= 1; dy++) {
     const ry = gy + dy;
     if (ry < 0 || ry > 15) continue;
@@ -187,7 +169,7 @@ export function evalVoxelSprite16x16(pLocal, spriteRows, pxSize = 0.026, halfThi
       const dp = sdBox(sub3(pLocal, v3(cx, cy, 0)), v3(pxSize * 0.5, pxSize * 0.5, halfThick));
       if (dp < bestD) {
         bestD = dp;
-        bestCol = spriteCharColor(ch);
+        bestCol = colorFn(ch) || bestCol;
       }
     }
   }
@@ -195,7 +177,51 @@ export function evalVoxelSprite16x16(pLocal, spriteRows, pxSize = 0.026, halfThi
     const dz = Math.max(Math.abs(pLocal.z) - halfThick, 0);
     return { d: Math.hypot(pxSize * 1.25, dz), color: bestCol, roughness: 0.16 };
   }
-  return { d: bestD, color: bestCol, roughness: 0.16 };
+  return { d: bestD, color: bestCol, roughness: 0.18 };
+}
+
+// Authentic 3D Iron-Framed Voxel Lantern (6x9x6 px + top cap + hanging loop)
+export function evalLanternSDF(pWorld, pos = v3(0, 0, 0), scale = 1.0) {
+  const p = mul3(sub3(pWorld, pos), 1 / scale);
+  const dBound = len3(p) - 0.35;
+  if (dBound > 0.25) return { d: dBound * scale, color: [51, 65, 85], roughness: 0.3, emissive: 0 };
+
+  const dBody = sdBox(p, v3(0.088, 0.105, 0.088));
+  const dCap = sdBox(sub3(p, v3(0, 0.125, 0)), v3(0.062, 0.022, 0.062));
+  const dLoop = sdBox(sub3(p, v3(0, 0.162, 0)), v3(0.024, 0.022, 0.012));
+  const dMin = Math.min(dBody, dCap, dLoop);
+
+  if (dCap <= dBody || dLoop <= dBody) {
+    return { d: dMin * scale, color: [58, 66, 78], roughness: 0.28, emissive: 0 };
+  }
+  // Iron cage frame along edges & bottom/top rims of lantern body
+  const onEdgeX = Math.abs(p.x) > 0.066;
+  const onEdgeY = Math.abs(p.y) > 0.082;
+  const onEdgeZ = Math.abs(p.z) > 0.066;
+  if ((onEdgeX && onEdgeZ) || onEdgeY) {
+    return { d: dMin * scale, color: [52, 60, 72], roughness: 0.28, emissive: 0 };
+  }
+  // Glowing pixel flame core inside iron cage!
+  const hot = Math.abs(p.x) < 0.035 && Math.abs(p.y) < 0.045 && Math.abs(p.z) < 0.035;
+  return {
+    d: dMin * scale,
+    color: hot ? [255, 247, 194] : [245, 162, 36],
+    roughness: 0.1,
+    emissive: hot ? 0.95 : 0.78
+  };
+}
+
+// Textured Minecraft Pixel Smoke Puff (multi-tone white/silver/slate voxel puff)
+export function evalVoxelSmokePuff(pWorld, pos, halfSize = 0.11) {
+  const p = sub3(pWorld, pos);
+  const d = sdBox(p, v3(halfSize, halfSize, halfSize));
+  if (d > 0.15) return { d, color: [241, 245, 249], roughness: 0.4, emissive: 0 };
+  const ix = clamp(Math.floor(((p.x + halfSize) / (2 * halfSize)) * 4), 0, 3);
+  const iy = clamp(Math.floor(((p.y + halfSize) / (2 * halfSize)) * 4), 0, 3);
+  const iz = clamp(Math.floor(((p.z + halfSize) / (2 * halfSize)) * 4), 0, 3);
+  const r = texHash(ix, iy, iz);
+  const col = r < 0.25 ? [194, 204, 216] : r > 0.7 ? [252, 254, 255] : [228, 234, 242];
+  return { d, color: col, roughness: 0.42, emissive: 0.16 };
 }
 
 // ---------- Official Mojang-Accurate 8x8 / 8x12 / 4x12 Character Pixel Maps ----------
@@ -401,199 +427,169 @@ function evalDynamicExpressionOverlay(ix, iy, expression, baseTheme) {
 }
 
 // ---------- Canonical 16x16x16 Voxel Block & Prop Evaluator ----------
-const GRASS_OVERHANG = [3, 4, 2, 3, 5, 3, 2, 4, 3, 2, 4, 5, 3, 2, 3, 4];
-
-const TNT_FONT = {
-  T: ["111", "010", "010", "010"],
-  N: ["1001", "1101", "1011", "1001"]
-};
+function blendFlashWhite(col, active) {
+  if (!active) return col;
+  return [
+    Math.round(mix(col[0], 255, 0.72)),
+    Math.round(mix(col[1], 255, 0.72)),
+    Math.round(mix(col[2], 255, 0.72))
+  ];
+}
 
 export function evalMinecraftBlockSDF(pWorld, cfg = {}) {
   const {
     pos = v3(0, 0, 0),
     yaw = 0,
     scale = 1.0,
-    type = "grass-block", // "grass-block" | "diamond-ore" | "tnt-block" | "crafting-table" | "chest-hinged"
-    cracks = 0, // 0..1 mining crack overlay
+    type = "grass-block",
+    cracks = 0,
     flashWhite = false,
     lidAngle = 0
   } = cfg;
 
   const p = mul3(rotY(sub3(pWorld, pos), -yaw), 1 / scale);
-  const halfB = type === "chest-hinged" ? 0.315 : 0.36; // 14px chest vs 16px block
-  const dBound = sdBox(p, v3(halfB + 0.06, halfB + 0.18, halfB + 0.06));
+  const halfB = type === "chest-hinged" ? 0.315 : 0.36;
+  const dBound = sdBox(p, v3(halfB + 0.06, halfB + 0.24, halfB + 0.06));
   if (dBound > 0.42) {
-    return { d: dBound * scale, color: [100, 100, 100], roughness: 0.5, emissive: 0 };
+    return { d: dBound * scale, color: [110, 110, 114], roughness: 0.45, emissive: 0 };
   }
 
   if (type === "chest-hinged") {
-    // 14x14x10 hollow oak base + 14x4x14 upward-hinged lid + 2x4x1 silver front latch
-    const dBaseOuter = sdRoundBox(sub3(p, v3(0, -0.09, 0)), v3(0.315, 0.225, 0.315), 0.004);
-    const dHollow = sdBox(sub3(p, v3(0, 0.06, 0)), v3(0.255, 0.12, 0.255));
+    // 14x14x10 hollow golden-amber oak base + 14x4x14 upward-hinged lid + 2x4x1 beveled silver latch
+    const dBaseOuter = sdBox(sub3(p, v3(0, -0.09, 0)), v3(0.315, 0.225, 0.315));
+    const dHollow = sdBox(sub3(p, v3(0, 0.06, 0)), v3(0.252, 0.12, 0.252));
     const dBase = Math.max(dBaseOuter, -dHollow);
 
     const pPivot = sub3(p, v3(0, 0.135, -0.315));
     const pLidLocal = sub3(rotX(pPivot, lidAngle), v3(0, 0.09, 0.315));
-    const dLid = sdRoundBox(pLidLocal, v3(0.315, 0.09, 0.315), 0.004);
-    const pLatch = sub3(pLidLocal, v3(0, -0.065, 0.33));
-    const dLatch = sdBox(pLatch, v3(0.045, 0.075, 0.024));
+    const dLid = sdBox(pLidLocal, v3(0.315, 0.09, 0.315));
+    const pLatch = sub3(pLidLocal, v3(0, -0.075, 0.326));
+    const dLatch = sdBox(pLatch, v3(0.042, 0.078, 0.018));
 
     const dChest = Math.min(dBase, dLid, dLatch);
     if (dLatch <= dBase && dLatch <= dLid) {
-      return { d: dChest * scale, color: [236, 242, 248], roughness: 0.14, emissive: 0.08 };
+      const latchCol = pLatch.y > 0.02 ? [226, 232, 238] : pLatch.y < -0.03 ? [142, 148, 156] : [192, 198, 206];
+      return { d: dChest * scale, color: latchCol, roughness: 0.22, emissive: 0.04 };
     }
-    if (dBase <= dLid && p.y > 0.02 && Math.abs(p.x) < 0.26 && Math.abs(p.z) < 0.26) {
-      return { d: dChest * scale, color: [36, 22, 12], roughness: 0.5, emissive: 0 };
+    if (dLid <= dBase) {
+      const lx = clamp(Math.floor(((pLidLocal.x + 0.315) / 0.63) * 14), 0, 13);
+      const ly = clamp(Math.floor(((pLidLocal.y + 0.09) / 0.18) * 4), 0, 3);
+      const lz = clamp(Math.floor(((pLidLocal.z + 0.315) / 0.63) * 14), 0, 13);
+      const eX = lx === 0 || lx === 13 ? 1 : 0;
+      const eY = ly === 0 || ly === 3 ? 1 : 0;
+      const eZ = lz === 0 || lz === 13 ? 1 : 0;
+      const isDarkSeam = ly === 0 || eX + eY + eZ >= 2;
+      const n = (texHash(lx, ly + 10, lz) - 0.5) * 16;
+      const col = isDarkSeam ? [38, 24, 12] : shadeTexel([214, 150, 56], n);
+      return { d: dChest * scale, color: col, roughness: 0.42, emissive: 0.04 };
     }
-    const ux = clamp(Math.floor(((p.x + 0.315) / 0.63) * 14), 0, 13);
-    const uy = clamp(Math.floor(((p.y + 0.315) / 0.63) * 14), 0, 13);
-    const uz = clamp(Math.floor(((p.z + 0.315) / 0.63) * 14), 0, 13);
-    const isBorder =
-      ux === 0 || ux === 13 || uz === 0 || uz === 13 || uy === 0 || uy === 13 || uy === 9;
-    const baseWood = isBorder ? [68, 40, 18] : [206, 138, 56];
-    const n = (texHash(ux, uy, uz) - 0.5) * 18;
-    return { d: dChest * scale, color: shadeTexel(baseWood, n), roughness: 0.36, emissive: 0 };
-  }
-
-  const dBox = sdRoundBox(p, v3(halfB, halfB, halfB), 0.004);
-  if (flashWhite) {
-    return { d: dBox * scale, color: [255, 255, 255], roughness: 0.1, emissive: 0.65 };
-  }
-
-  const ux = clamp(Math.floor(((p.x + halfB) / (2 * halfB)) * 16), 0, 15);
-  const uy = clamp(Math.floor(((p.y + halfB) / (2 * halfB)) * 16), 0, 15);
-  const uz = clamp(Math.floor(((p.z + halfB) / (2 * halfB)) * 16), 0, 15);
-  const noise = (texHash(ux, uy, uz) - 0.5) * 22;
-  const isTop = p.y > halfB - 0.015;
-
-  if (type === "grass-block") {
-    const colIdx = Math.abs(p.z) >= Math.abs(p.x) ? ux : uz;
-    const overhang = GRASS_OVERHANG[colIdx];
-    if (isTop || uy >= 16 - overhang) {
-      return {
-        d: dBox * scale,
-        color: shadeTexel([74, 194, 78], noise),
-        roughness: 0.42,
-        emissive: 0
-      };
+    if (p.y > 0.02 && Math.abs(p.x) < 0.26 && Math.abs(p.z) < 0.26) {
+      return { d: dChest * scale, color: [32, 20, 10], roughness: 0.5, emissive: 0 };
     }
-    return {
-      d: dBox * scale,
-      color: shadeTexel([134, 92, 56], noise),
-      roughness: 0.48,
-      emissive: 0
-    };
-  }
-
-  if (type === "diamond-ore") {
-    // Check if texel on face is part of the glowing cyan diamond ore cluster
-    const fx = isTop ? ux : Math.abs(p.z) >= Math.abs(p.x) ? ux : uz;
-    const fy = isTop ? uz : uy;
-    const isDiamond =
-      ((fx === 4 || fx === 5) && (fy === 10 || fy === 11)) ||
-      ((fx === 10 || fx === 11) && (fy === 9 || fy === 10)) ||
-      ((fx === 6 || fx === 7 || fx === 8) && (fy === 5 || fy === 6)) ||
-      ((fx === 11 || fx === 12) && (fy === 3 || fy === 4)) ||
-      ((fx === 3 || fx === 4) && (fy === 4 || fy === 5));
-
-    if (cracks > 0) {
-      const onCrack =
-        Math.abs(fx - fy) <= 1 && fx >= 3 && fx <= 3 + Math.floor(cracks * 10);
-      if (onCrack) {
-        return { d: dBox * scale, color: [22, 26, 34], roughness: 0.5, emissive: 0 };
-      }
-    }
-
-    if (isDiamond) {
-      const bright = (fx + fy) % 2 === 0 ? [165, 243, 252] : [56, 229, 212];
-      return { d: dBox * scale, color: bright, roughness: 0.12, emissive: 0.45 };
-    }
-    return {
-      d: dBox * scale,
-      color: shadeTexel([108, 118, 132], noise),
-      roughness: 0.44,
-      emissive: 0
-    };
-  }
-
-  if (type === "tnt-block") {
-    if (isTop) {
-      if (ux >= 6 && ux <= 9 && uz >= 6 && uz <= 9) {
-        return { d: dBox * scale, color: [38, 42, 48], roughness: 0.4, emissive: 0 };
-      }
-      const c = (Math.floor(ux / 4) + Math.floor(uz / 4)) % 2 === 0 ? [225, 45, 45] : [192, 34, 34];
-      return { d: dBox * scale, color: shadeTexel(c, noise * 0.6), roughness: 0.35, emissive: 0 };
-    }
-    if (uy >= 6 && uy <= 10) {
-      // White TNT band (5 texels tall: uy = 6..10)
-      const fx = Math.abs(p.z) >= Math.abs(p.x) ? ux : uz;
-      const row = 9 - uy; // 0..3 inside 4-row font
-      if (row >= 0 && row <= 3) {
-        if (fx >= 2 && fx <= 4 && TNT_FONT.T[row][fx - 2] === "1") {
-          return { d: dBox * scale, color: [20, 24, 32], roughness: 0.3, emissive: 0 };
-        }
-        if (fx >= 6 && fx <= 9 && TNT_FONT.N[row][fx - 6] === "1") {
-          return { d: dBox * scale, color: [20, 24, 32], roughness: 0.3, emissive: 0 };
-        }
-        if (fx >= 11 && fx <= 13 && TNT_FONT.T[row][fx - 11] === "1") {
-          return { d: dBox * scale, color: [20, 24, 32], roughness: 0.3, emissive: 0 };
-        }
-      }
-      return { d: dBox * scale, color: shadeTexel([245, 247, 250], noise * 0.4), roughness: 0.3, emissive: 0 };
-    }
-    const fx = Math.abs(p.z) >= Math.abs(p.x) ? ux : uz;
-    const stripe = Math.floor(fx / 4) % 2 === 0 ? [228, 46, 46] : [196, 32, 32];
-    return { d: dBox * scale, color: shadeTexel(stripe, noise * 0.7), roughness: 0.36, emissive: 0 };
-  }
-
-  if (type === "diamond-block") {
-    const isBorder = ux === 0 || ux === 15 || uy === 0 || uy === 15 || uz === 0 || uz === 15;
-    const base = isBorder ? [20, 184, 166] : (ux + uy + uz) % 5 === 0 ? [207, 250, 254] : [74, 237, 217];
-    return { d: dBox * scale, color: shadeTexel(base, noise * 0.4), roughness: 0.14, emissive: 0.28 };
-  }
-
-  if (type === "redstone-lamp") {
-    const eX = ux <= 1 || ux >= 14 ? 1 : 0;
-    const eY = uy <= 1 || uy >= 14 ? 1 : 0;
-    const eZ = uz <= 1 || uz >= 14 ? 1 : 0;
-    if (eX + eY + eZ >= 2) {
-      return { d: dBox * scale, color: [68, 44, 28], roughness: 0.42, emissive: 0 };
-    }
-    const lit = cfg.lit !== false;
-    const isCross = (ux === 7 || ux === 8) && (uy === 7 || uy === 8);
-    const base = lit ? (isCross ? [254, 249, 195] : [251, 191, 36]) : [120, 72, 38];
-    return { d: dBox * scale, color: shadeTexel(base, noise * 0.4), roughness: 0.16, emissive: lit ? 0.78 : 0 };
+    const bx = clamp(Math.floor(((p.x + 0.315) / 0.63) * 14), 0, 13);
+    const by = clamp(Math.floor(((p.y + 0.315) / 0.45) * 10), 0, 9);
+    const bz = clamp(Math.floor(((p.z + 0.315) / 0.63) * 14), 0, 13);
+    const eX = bx === 0 || bx === 13 ? 1 : 0;
+    const eY = by === 0 || by === 9 ? 1 : 0;
+    const eZ = bz === 0 || bz === 13 ? 1 : 0;
+    const isDarkRim = by === 9 || eX + eY + eZ >= 2;
+    const n = (texHash(bx, by, bz) - 0.5) * 16;
+    const col = isDarkRim ? [38, 24, 12] : shadeTexel([204, 140, 50], n);
+    return { d: dChest * scale, color: col, roughness: 0.42, emissive: 0.04 };
   }
 
   if (type === "sticky-piston") {
     const ext = (cfg.extend ?? 0.35) * 0.36;
-    const dBaseP = sdRoundBox(sub3(p, v3(0, -0.09, 0)), v3(0.36, 0.27, 0.36), 0.004);
+    const dBaseP = sdBox(sub3(p, v3(0, -0.09, 0)), v3(0.36, 0.27, 0.36));
     const dRod = sdBox(sub3(p, v3(0, 0.18 + ext * 0.5, 0)), v3(0.09, 0.10 + ext * 0.5, 0.09));
-    const dHeadP = sdRoundBox(sub3(p, v3(0, 0.27 + ext, 0)), v3(0.36, 0.09, 0.36), 0.004);
+    const pHeadP = sub3(p, v3(0, 0.27 + ext, 0));
+    const dHeadP = sdBox(pHeadP, v3(0.36, 0.09, 0.36));
     const dMinP = Math.min(dBaseP, dRod, dHeadP);
+
+    const ux = clamp(Math.floor(((p.x + 0.36) / 0.72) * 16), 0, 15);
+    const uz = clamp(Math.floor(((p.z + 0.36) / 0.72) * 16), 0, 15);
+
     if (dHeadP <= dBaseP && dHeadP <= dRod) {
-      if (p.y > 0.34 + ext && Math.abs(p.x) < 0.22 && Math.abs(p.z) < 0.22) {
-        return { d: dMinP * scale, color: shadeTexel([116, 212, 76], noise * 0.5), roughness: 0.22, emissive: 0.1 };
+      if (pHeadP.y > 0.078) {
+        return { d: dMinP * scale, color: texPistonTopSticky16(ux, uz), roughness: 0.32, emissive: 0.04 };
       }
-      return { d: dMinP * scale, color: shadeTexel([182, 128, 72], noise * 0.5), roughness: 0.36, emissive: 0 };
+      const hy = clamp(12 + Math.floor(((pHeadP.y + 0.09) / 0.18) * 4), 12, 15);
+      const fx = Math.abs(p.z) >= Math.abs(p.x) ? ux : uz;
+      return { d: dMinP * scale, color: texPistonSide16(fx, hy), roughness: 0.42, emissive: 0 };
     }
-    return { d: dMinP * scale, color: shadeTexel([104, 114, 128], noise), roughness: 0.45, emissive: 0 };
+    if (dRod <= dBaseP) {
+      const ry = Math.floor((p.y + 1.0) / 0.045);
+      return { d: dMinP * scale, color: ry % 2 === 0 ? [164, 124, 72] : [132, 98, 56], roughness: 0.4, emissive: 0 };
+    }
+    const by = clamp(Math.floor(((p.y + 0.36) / 0.54) * 12), 0, 11);
+    const fx = Math.abs(p.z) >= Math.abs(p.x) ? ux : uz;
+    return { d: dMinP * scale, color: texCobble16(fx, by), roughness: 0.46, emissive: 0 };
+  }
+
+  const dBox = sdBox(p, v3(halfB, halfB, halfB));
+  const ux = clamp(Math.floor(((p.x + halfB) / (2 * halfB)) * 16), 0, 15);
+  const uy = clamp(Math.floor(((p.y + halfB) / (2 * halfB)) * 16), 0, 15);
+  const uz = clamp(Math.floor(((p.z + halfB) / (2 * halfB)) * 16), 0, 15);
+
+  const ax = Math.abs(p.x);
+  const ay = Math.abs(p.y);
+  const az = Math.abs(p.z);
+  const isTop = ay >= ax && ay >= az && p.y > 0;
+  const isBot = ay >= ax && ay >= az && p.y <= 0;
+  const fx = isTop || isBot ? ux : az >= ax ? ux : uz;
+  const fy = isTop || isBot ? uz : uy;
+
+  if (type === "grass-block") {
+    const col = isTop ? texGrassTop16(ux, uz) : isBot ? texDirt16(ux, uz) : texGrassSide16(fx, uy);
+    return { d: dBox * scale, color: col, roughness: 0.46, emissive: 0 };
+  }
+
+  if (type === "stone-block") {
+    return { d: dBox * scale, color: texStone16(fx, fy), roughness: 0.48, emissive: 0 };
+  }
+
+  if (type === "cobble-block") {
+    return { d: dBox * scale, color: texCobble16(fx, fy), roughness: 0.48, emissive: 0 };
+  }
+
+  if (type === "stone-bricks") {
+    return { d: dBox * scale, color: texStoneBricks16(fx, fy), roughness: 0.46, emissive: 0 };
+  }
+
+  if (type === "oak-planks") {
+    return { d: dBox * scale, color: texOakPlanks16(fx, fy), roughness: 0.44, emissive: 0 };
+  }
+
+  if (type === "diamond-ore") {
+    if (cracks > 0 && hasMiningCrack(fx, fy, cracks)) {
+      return { d: dBox * scale, color: [24, 26, 30], roughness: 0.5, emissive: 0 };
+    }
+    const ore = texDiamondOre16(fx, fy);
+    return { d: dBox * scale, color: ore.col, roughness: ore.rough, emissive: ore.emissive };
+  }
+
+  if (type === "tnt-block") {
+    const baseCol = isTop || isBot ? texTntTop16(ux, uz) : texTntSide16(fx, uy);
+    return {
+      d: dBox * scale,
+      color: blendFlashWhite(baseCol, flashWhite),
+      roughness: flashWhite ? 0.16 : 0.42,
+      emissive: flashWhite ? 0.58 : 0
+    };
+  }
+
+  if (type === "diamond-block") {
+    return { d: dBox * scale, color: texDiamondBlock16(fx, fy), roughness: 0.18, emissive: 0.18 };
+  }
+
+  if (type === "redstone-lamp") {
+    const lRes = texRedstoneLamp16(fx, fy, cfg.lit !== false);
+    return { d: dBox * scale, color: lRes.col, roughness: lRes.rough, emissive: lRes.emissive };
   }
 
   // Default: "crafting-table"
-  if (isTop) {
-    const inGrid = ux >= 2 && ux <= 13 && uz >= 2 && uz <= 13;
-    const isLine = ux === 2 || ux === 6 || ux === 9 || ux === 13 || uz === 2 || uz === 6 || uz === 9 || uz === 13;
-    const c = isLine ? [78, 46, 24] : inGrid ? [196, 138, 76] : [142, 92, 46];
-    return { d: dBox * scale, color: shadeTexel(c, noise * 0.6), roughness: 0.38, emissive: 0 };
-  }
-  if (uy >= 12) {
-    return { d: dBox * scale, color: shadeTexel([88, 52, 28], noise * 0.6), roughness: 0.4, emissive: 0 };
-  }
-  const fx = Math.abs(p.z) >= Math.abs(p.x) ? ux : uz;
-  const isToolSilhouette = (fx >= 4 && fx <= 6 && uy >= 4 && uy <= 10) || (fx >= 10 && fx <= 12 && uy >= 5 && uy <= 9);
-  const sideCol = isToolSilhouette ? [182, 192, 206] : [168, 114, 62];
-  return { d: dBox * scale, color: shadeTexel(sideCol, noise * 0.6), roughness: 0.38, emissive: 0 };
+  const cCol = isTop ? texCraftingTop16(ux, uz) : isBot ? texOakPlanks16(ux, uz) : texCraftingSide16(fx, uy);
+  return { d: dBox * scale, color: cCol, roughness: 0.44, emissive: 0 };
 }
 
 // ---------- Canonical Quadruped Creeper Mob Evaluator ----------
@@ -608,77 +604,93 @@ export function evalCreeperSDF(pWorld, cfg = {}) {
 
   const p = mul3(rotY(sub3(pWorld, pos), -yaw), 1 / swell);
   const dBound = len3(p) - 1.35;
-  if (dBound > 0.45) return { d: dBound * swell, color: [74, 178, 72], roughness: 0.4, emissive: 0 };
+  if (dBound > 0.45) return { d: dBound * swell, color: [88, 168, 76], roughness: 0.44, emissive: 0 };
 
-  // 8x8x8 Head centered at y = 0.56
   const pHead = rotY(sub3(p, v3(0, 0.56, 0)), -headYaw);
-  const dHead = sdRoundBox(pHead, v3(0.18, 0.18, 0.18), 0.004);
-
-  // 8x12x4 Body centered at y = 0.11
+  const dHead = sdBox(pHead, v3(0.18, 0.18, 0.18));
   const pBody = sub3(p, v3(0, 0.11, 0));
-  const dBody = sdRoundBox(pBody, v3(0.18, 0.27, 0.09), 0.004);
+  const dBody = sdBox(pBody, v3(0.18, 0.27, 0.09));
 
-  // Four 4x6x4 short legs at the base (y = -0.29)
-  const dLegFL = sdRoundBox(sub3(p, v3(-0.095, -0.29, 0.11)), v3(0.085, 0.135, 0.085), 0.004);
-  const dLegFR = sdRoundBox(sub3(p, v3(0.095, -0.29, 0.11)), v3(0.085, 0.135, 0.085), 0.004);
-  const dLegBL = sdRoundBox(sub3(p, v3(-0.095, -0.29, -0.11)), v3(0.085, 0.135, 0.085), 0.004);
-  const dLegBR = sdRoundBox(sub3(p, v3(0.095, -0.29, -0.11)), v3(0.085, 0.135, 0.085), 0.004);
+  const dLegFL = sdBox(sub3(p, v3(-0.09, -0.295, 0.155)), v3(0.088, 0.135, 0.088));
+  const dLegFR = sdBox(sub3(p, v3(0.09, -0.295, 0.155)), v3(0.088, 0.135, 0.088));
+  const dLegBL = sdBox(sub3(p, v3(-0.09, -0.295, -0.155)), v3(0.088, 0.135, 0.088));
+  const dLegBR = sdBox(sub3(p, v3(0.09, -0.295, -0.155)), v3(0.088, 0.135, 0.088));
   const dLegs = Math.min(dLegFL, dLegFR, dLegBL, dLegBR);
 
   const dMin = Math.min(dHead, dBody, dLegs);
-  if (flashWhite) {
-    return { d: dMin * swell, color: [255, 255, 255], roughness: 0.12, emissive: 0.65 };
-  }
-
   const gx = Math.floor((p.x + 2.0) / 0.045);
   const gy = Math.floor((p.y + 2.0) / 0.045);
   const gz = Math.floor((p.z + 2.0) / 0.045);
-  const n = (texHash(gx, gy, gz) - 0.5) * 34;
-  let col = shadeTexel([82, 184, 74], n);
+  let col = texCreeperSkin(gx, gy, gz);
 
-  // Iconic 8x8 black pixel Creeper face on front of head
-  if (dHead <= dBody && dHead <= dLegs && pHead.z > 0.165) {
+  if (dHead <= dBody && dHead <= dLegs && pHead.z > 0.168) {
     const ix = clamp(Math.floor(((pHead.x + 0.18) / 0.36) * 8), 0, 7);
     const iy = clamp(Math.floor(((pHead.y + 0.18) / 0.36) * 8), 0, 7);
-    const isEye = (iy === 4 || iy === 5) && (ix === 1 || ix === 2 || ix === 5 || ix === 6);
-    const isNose = (iy === 2 || iy === 3) && (ix === 3 || ix === 4);
-    const isMouthMid = iy === 1 && ix >= 2 && ix <= 5;
-    const isMouthEnds = iy === 0 && (ix === 2 || ix === 5);
-    if (isEye || isNose || isMouthMid || isMouthEnds) {
-      col = [18, 24, 20];
+    if (CREEPER_FACE_8[7 - iy][ix] === "X") {
+      col = [18, 22, 18];
     }
   }
 
-  return { d: dMin * swell, color: col, roughness: 0.4, emissive: 0 };
+  return {
+    d: dMin * swell,
+    color: blendFlashWhite(col, flashWhite),
+    roughness: flashWhite ? 0.18 : 0.45,
+    emissive: flashWhite ? 0.58 : 0
+  };
 }
 
 // ---------- Canonical Pink Voxel Axolotl Pet Evaluator ----------
 export function evalAxolotlSDF(pWorld, cfg = {}) {
   const { pos = v3(0, 0, 0), yaw = 0 } = cfg;
   const p = rotY(sub3(pWorld, pos), -yaw);
-  const dBound = len3(p) - 0.65;
-  if (dBound > 0.45) return { d: dBound, color: [249, 168, 212], roughness: 0.35, emissive: 0 };
+  const dBound = len3(p) - 0.72;
+  if (dBound > 0.45) return { d: dBound, color: [248, 182, 214], roughness: 0.4, emissive: 0 };
 
-  const pHead = sub3(p, v3(0, 0.04, 0.14));
-  const dHead = sdRoundBox(pHead, v3(0.14, 0.10, 0.11), 0.004);
-  const dBody = sdRoundBox(sub3(p, v3(0, 0.0, -0.06)), v3(0.12, 0.08, 0.16), 0.004);
-  const dTail = sdRoundBox(sub3(p, v3(0, 0.01, -0.28)), v3(0.02, 0.06, 0.12), 0.003);
-  // 3D pixel external gill fronds on left & right of head
-  const dGillL = sdBox(sub3(pHead, v3(-0.17, 0.03, -0.02)), v3(0.04, 0.07, 0.015));
-  const dGillR = sdBox(sub3(pHead, v3(0.17, 0.03, -0.02)), v3(0.04, 0.07, 0.015));
-  const dGills = Math.min(dGillL, dGillR);
+  const pHead = sub3(p, v3(0, 0.03, 0.15));
+  const dHead = sdBox(pHead, v3(0.15, 0.095, 0.11));
+  const dBody = sdBox(sub3(p, v3(0, 0.0, -0.06)), v3(0.125, 0.078, 0.15));
+  const dTailCore = sdBox(sub3(p, v3(0, 0.0, -0.28)), v3(0.022, 0.045, 0.11));
+  const dTailFin = sdBox(sub3(p, v3(0, 0.005, -0.30)), v3(0.012, 0.078, 0.13));
 
-  const dMin = Math.min(dHead, dBody, dTail, dGills);
+  const dFeet = Math.min(
+    sdBox(sub3(p, v3(-0.135, -0.085, 0.06)), v3(0.032, 0.048, 0.032)),
+    sdBox(sub3(p, v3(0.135, -0.085, 0.06)), v3(0.032, 0.048, 0.032)),
+    sdBox(sub3(p, v3(-0.135, -0.085, -0.12)), v3(0.032, 0.048, 0.032)),
+    sdBox(sub3(p, v3(0.135, -0.085, -0.12)), v3(0.032, 0.048, 0.032))
+  );
+
+  const gillBoxes = [];
+  for (const s of [-1, 1]) {
+    gillBoxes.push(sdBox(sub3(pHead, v3(s * 0.185, 0.075, -0.02)), v3(0.045, 0.022, 0.014)));
+    gillBoxes.push(sdBox(sub3(pHead, v3(s * 0.195, 0.015, -0.02)), v3(0.052, 0.022, 0.014)));
+    gillBoxes.push(sdBox(sub3(pHead, v3(s * 0.180, -0.045, -0.02)), v3(0.042, 0.022, 0.014)));
+    gillBoxes.push(sdBox(sub3(pHead, v3(s * 0.10, 0.125, -0.02)), v3(0.024, 0.035, 0.014)));
+  }
+  const dGills = Math.min(...gillBoxes);
+
+  const dMin = Math.min(dHead, dBody, dTailCore, dTailFin, dFeet, dGills);
   if (dGills <= dHead && dGills <= dBody) {
-    return { d: dMin, color: [236, 72, 153], roughness: 0.3, emissive: 0 };
+    const tip = Math.abs(pHead.x) > 0.20 || pHead.y > 0.13;
+    return { d: dMin, color: tip ? [244, 114, 182] : [219, 39, 119], roughness: 0.36, emissive: 0 };
   }
-  let col = [249, 168, 212];
-  if (dHead <= dBody && pHead.z > 0.095) {
-    if (Math.abs(Math.abs(pHead.x) - 0.075) < 0.022 && Math.abs(pHead.y - 0.015) < 0.022) {
-      col = [30, 20, 38];
-    }
+  if (dTailFin < dTailCore && dTailFin <= dBody) {
+    return { d: dMin, color: [244, 114, 182], roughness: 0.36, emissive: 0 };
   }
-  return { d: dMin, color: col, roughness: 0.34, emissive: 0 };
+
+  const gx = Math.floor((p.x + 1.0) / 0.038);
+  const gy = Math.floor((p.y + 1.0) / 0.038);
+  const gz = Math.floor((p.z + 1.0) / 0.038);
+  const n = (texHash(gx, gy, gz) - 0.5) * 14;
+  let col = shadeTexel([251, 194, 222], n);
+
+  if (dHead <= dBody && pHead.z > 0.098) {
+    const ix = clamp(Math.floor(((pHead.x + 0.15) / 0.30) * 8), 0, 7);
+    const iy = clamp(Math.floor(((pHead.y + 0.095) / 0.19) * 5), 0, 4);
+    if (iy === 2 && (ix === 1 || ix === 6)) col = [24, 24, 42];
+    else if (iy === 1 && ix >= 3 && ix <= 4) col = [225, 92, 138];
+    else if (iy === 2 && (ix === 0 || ix === 7)) col = [244, 114, 182];
+  }
+  return { d: dMin, color: col, roughness: 0.42, emissive: 0 };
 }
 
 // ---------- Canonical Tall Enderman Mob Evaluator ----------
@@ -686,13 +698,16 @@ export function evalEndermanSDF(pWorld, cfg = {}) {
   const { pos = v3(0, 0, 0), yaw = 0, jawOpen = 0, carriesGrass = true } = cfg;
   const p = rotY(sub3(pWorld, pos), -yaw);
   const dBound = len3(p) - 1.85;
-  if (dBound > 0.45) return { d: dBound, color: [20, 24, 32], roughness: 0.35, emissive: 0 };
+  if (dBound > 0.45) return { d: dBound, color: [20, 20, 26], roughness: 0.42, emissive: 0 };
 
   const pHead = sub3(p, v3(0, 0.72 + jawOpen * 0.08, 0));
-  const dHead = sdRoundBox(pHead, v3(0.18, 0.18, 0.18), 0.004);
-  const dBody = sdRoundBox(sub3(p, v3(0, 0.30, 0)), v3(0.16, 0.24, 0.08), 0.004);
-  const pArmL = rotX(sub3(p, v3(-0.21, 0.50, 0)), carriesGrass ? 0.52 : 0.05);
-  const pArmR = rotX(sub3(p, v3(0.21, 0.50, 0)), carriesGrass ? 0.52 : 0.05);
+  const dHead = sdBox(pHead, v3(0.18, 0.18, 0.18));
+  const dJaw = jawOpen > 0.05 ? sdBox(sub3(p, v3(0, 0.56, 0)), v3(0.178, 0.045, 0.178)) : 1e9;
+  const dBody = sdBox(sub3(p, v3(0, 0.30, 0)), v3(0.16, 0.24, 0.08));
+
+  const armAngle = carriesGrass ? 0.56 : -0.04;
+  const pArmL = rotX(sub3(p, v3(-0.205, 0.50, 0)), armAngle);
+  const pArmR = rotX(sub3(p, v3(0.205, 0.50, 0)), armAngle);
   const dArms = Math.min(
     sdBox(sub3(pArmL, v3(0, -0.34, 0)), v3(0.042, 0.36, 0.042)),
     sdBox(sub3(pArmR, v3(0, -0.34, 0)), v3(0.042, 0.36, 0.042))
@@ -702,23 +717,28 @@ export function evalEndermanSDF(pWorld, cfg = {}) {
     sdBox(sub3(p, v3(0.08, -0.31, 0)), v3(0.044, 0.38, 0.044))
   );
 
-  let bestD = Math.min(dHead, dBody, dArms, dLegs);
-  let col = [22, 24, 32];
+  let bestD = Math.min(dHead, dJaw, dBody, dArms, dLegs);
+  const gx = Math.floor((p.x + 2.0) / 0.045);
+  const gy = Math.floor((p.y + 2.0) / 0.045);
+  const gz = Math.floor((p.z + 2.0) / 0.045);
+  const n = (texHash(gx, gy, gz) - 0.5) * 10;
+  let col = shadeTexel([22, 22, 28], n);
   let emissive = 0;
 
-  if (dHead <= dBody && dHead <= dArms && pHead.z > 0.165) {
+  if (dHead <= dBody && dHead <= dArms && pHead.z > 0.168) {
     const ix = clamp(Math.floor(((pHead.x + 0.18) / 0.36) * 8), 0, 7);
     const iy = clamp(Math.floor(((pHead.y + 0.18) / 0.36) * 8), 0, 7);
-    if (iy === 3 && (ix === 0 || ix === 1 || ix === 2 || ix === 5 || ix === 6 || ix === 7)) {
-      col = ix === 1 || ix === 6 ? [245, 108, 255] : [217, 70, 239];
-      emissive = 0.88;
+    if (iy === 3 && (ix <= 2 || ix >= 5)) {
+      const isPupil = ix === 1 || ix === 6;
+      col = isPupil ? [196, 28, 242] : [245, 192, 255];
+      emissive = isPupil ? 0.72 : 0.88;
     }
   }
 
   if (carriesGrass) {
     const grass = evalMinecraftBlockSDF(p, {
-      pos: v3(0, 0.05, 0.34),
-      scale: 0.56,
+      pos: v3(0, 0.06, 0.34),
+      scale: 0.46,
       type: "grass-block"
     });
     if (grass.d < bestD) {
@@ -726,7 +746,7 @@ export function evalEndermanSDF(pWorld, cfg = {}) {
     }
   }
 
-  return { d: bestD, color: col, roughness: 0.32, emissive };
+  return { d: bestD, color: col, roughness: 0.42, emissive };
 }
 
 // ---------- Canonical Minecraft Character SDF Evaluator ----------
@@ -977,23 +997,23 @@ export function evalMinecraftAvatarSDF(pWorld, cfg = {}) {
       addPart(sdRoundedCylinder(pSmoothRod, 0.032, 0.015, 0.28), [186, 200, 218], 0.12);
     }
 
-    // Authentic Extruded 16x16x1 Held Voxel Items (attached to Right Flat Square Hand, extending forward +Z)
+    // Authentic Extruded 16x16x1 Held Voxel Items (handle passes directly through center of Right 4x4 Hand!)
     if (driftMode === "none" && side === 1 && heldItem !== "none") {
       if (heldItem === "pickaxe" || heldItem === "sword") {
-        const qGrip = sub3(pArm, v3(0.0, -0.29, 0.25));
-        const pTool = rotY(rotX(qGrip, -0.15), Math.PI / 2);
+        // Right hand spans pArm.y = -0.45 .. -0.36; anchoring at (0, -0.40, 0.13) seats the oak handle right inside the 4x4 fist!
+        const qGrip = sub3(pArm, v3(0.0, -0.40, 0.13));
+        const pTool = rotY(rotX(qGrip, -0.28), Math.PI / 2);
         const sprite = heldItem === "sword" ? SWORD_SPRITE_16 : PICKAXE_SPRITE_16;
-        const sp = evalVoxelSprite16x16(pTool, sprite, 0.026, 0.018);
-        addPart(sp.d, sp.color, sp.roughness, 0.15);
+        const sp = evalVoxelSprite16x16(pTool, sprite, 0.025, 0.016, "tool");
+        addPart(sp.d, sp.color, sp.roughness, 0.12);
       } else if (heldItem === "lantern") {
-        const pLan = sub3(pArm, v3(0, -0.41, 0.16));
-        const dCap = sdBox(sub3(pLan, v3(0, 0.075, 0)), v3(0.055, 0.02, 0.055));
-        const dCore = sdBox(pLan, v3(0.068, 0.068, 0.068));
-        addPart(dCap, [51, 65, 85], 0.25, 0);
-        addPart(dCore, [251, 191, 36], 0.1, 0.85);
+        // Hang lantern vertically downward directly from the bottom of the 4x4 hand (zero gap)!
+        const pHandTip = rotX(sub3(pArm, v3(0, -0.43, 0.04)), pitch);
+        const lan = evalLanternSDF(pHandTip, v3(0, -0.078, 0.0), 0.78);
+        addPart(lan.d, lan.color, lan.roughness, lan.emissive);
       } else if (heldItem === "tnt-mini") {
         const tnt = evalMinecraftBlockSDF(pArm, {
-          pos: v3(-0.14, -0.37, 0.22),
+          pos: v3(-0.14, -0.39, 0.22),
           scale: 0.48,
           type: "tnt-block"
         });
@@ -1102,6 +1122,21 @@ export function render3DViewport(width, height, sceneFn, camCfg = {}) {
       let r = mix(bgTop[0], bgBot[0], vGrad);
       let g = mix(bgTop[1], bgBot[1], vGrad);
       let b = mix(bgTop[2], bgBot[2], vGrad);
+      // Blocky Minecraft Sky Clouds when ray points upward in outdoor daytime scenes!
+      if (rd.y > 0.06 && bgTop[2] > 180) {
+        const tc = (2.1 - ro.y) / rd.y;
+        if (tc > 0 && tc < 18) {
+          const cp = add3(ro, mul3(rd, tc));
+          const cx = Math.floor(cp.x / 0.85);
+          const cz = Math.floor(cp.z / 0.85);
+          if (texHash(cx, cz, 313) > 0.68) {
+            const cFade = Math.exp(-0.018 * tc * tc);
+            r = mix(r, 252, cFade * 0.85);
+            g = mix(g, 254, cFade * 0.85);
+            b = mix(b, 255, cFade * 0.85);
+          }
+        }
+      }
 
       const ocx = ro.x;
       const ocy = ro.y - 0.05;
@@ -1156,37 +1191,36 @@ export function render3DViewport(width, height, sceneFn, camCfg = {}) {
         b = clamp(base[2] * lighting + 240 * spec + 255 * rim, 0, 255);
       } else if (rd.y < -0.001 && floorY !== null) {
         const tf = (floorY - ro.y) / rd.y;
-        if (tf > 0 && tf < 12.0) {
+        if (tf > 0 && tf < 14.0) {
           const fp = add3(ro, mul3(rd, tf));
-          // Authentic 16x16 nearest-neighbor voxel block floor grid (1 block = 0.72 units, 1 texel = 0.045 units)
+          // Exact 16x16 Vanilla Minecraft Floor Textures (1 block = 0.72 units, zero fake grid borders!)
           const blockSize = 0.72;
           const bx = Math.floor(fp.x / blockSize);
           const bz = Math.floor(fp.z / blockSize);
           const ux = clamp(Math.floor(((fp.x / blockSize - bx) + 1) % 1 * 16), 0, 15);
           const uz = clamp(Math.floor(((fp.z / blockSize - bz) + 1) % 1 * 16), 0, 15);
-          const n = (texHash(ux + bx * 16, uz + bz * 16, 99) - 0.5) * 20;
+          const uxRot = (ux + Math.abs(bx * 5)) & 15;
+          const uzRot = (uz + Math.abs(bz * 7)) & 15;
 
-          let baseFloor = [92, 188, 84];
+          let tileCol;
           if (floorType === "stone") {
-            const isMortar = ux === 0 || uz === 0 || (uz === 8 && ux < 8) || (ux === 8 && uz >= 8);
-            baseFloor = isMortar ? [71, 85, 105] : [118, 128, 144];
+            tileCol = ((bx + bz) & 3) === 0 ? texCobble16(ux, uz) : texStone16(uxRot, uzRot);
+          } else if (floorType === "stone-bricks") {
+            tileCol = texStoneBricks16(ux, uz);
           } else if (floorType === "oak") {
-            const isPlankSeam = uz % 4 === 0 || (ux === 7 && uz % 8 < 4) || (ux === 14 && uz % 8 >= 4);
-            baseFloor = isPlankSeam ? [128, 86, 46] : [172, 122, 68];
+            tileCol = texOakPlanks16(ux, uz);
           } else {
-            // Grass block top grid with subtle 16x16 block border
-            const isBlockEdge = ux === 0 || uz === 0;
-            baseFloor = isBlockEdge ? [72, 168, 68] : [88, 192, 82];
+            tileCol = texGrassTop16(uxRot, uzRot);
           }
 
-          const tileCol = shadeTexel(baseFloor, n);
+          // Crisp Minecraft voxel sun shadow instead of blurry studio blob
           const floorShadow =
-            Math.abs(fp.x) < 1.35 && Math.abs(fp.z) < 1.35
+            Math.abs(fp.x) < 1.55 && Math.abs(fp.z) < 1.55
               ? calcSoftShadow(v3(fp.x, floorY + 0.02, fp.z), keyLight)
               : 1.0;
-          const fade = Math.exp(-0.07 * tf * tf);
-          r = mix(r, clamp(tileCol[0] * floorShadow + warmLight * 24, 0, 255), fade);
-          g = mix(g, clamp(tileCol[1] * floorShadow + warmLight * 14, 0, 255), fade);
+          const fade = Math.exp(-0.045 * tf * tf);
+          r = mix(r, clamp(tileCol[0] * floorShadow + warmLight * 26, 0, 255), fade);
+          g = mix(g, clamp(tileCol[1] * floorShadow + warmLight * 15, 0, 255), fade);
           b = mix(b, clamp(tileCol[2] * floorShadow, 0, 255), fade);
         }
       }
@@ -1258,18 +1292,27 @@ export function encodePNG(width, height, rgba) {
   ]);
 }
 
-// ---------- Scene Builders for the 3 Short-Video Cases ----------
+// ---------- Scene Builders for the 6 Short-Video Cases ----------
 
-function evalCaveTorchSDF(pWorld, pos) {
-  const p = sub3(pWorld, pos);
-  const dBound = len3(p) - 0.45;
-  if (dBound > 0.35) return { d: dBound, color: [146, 94, 44], roughness: 0.4, emissive: 0 };
-  const dStick = sdBox(sub3(p, v3(0, -0.06, 0)), v3(0.032, 0.16, 0.032));
-  const dFlame = sdBox(sub3(p, v3(0, 0.14, 0)), v3(0.042, 0.042, 0.042));
-  if (dFlame < dStick) {
-    return { d: dFlame, color: [253, 224, 71], roughness: 0.08, emissive: 0.95 };
-  }
-  return { d: dStick, color: [146, 94, 44], roughness: 0.42, emissive: 0 };
+// Cave Stone Wall Column + Angled Minecraft Wall Torch (placed far left/back so it NEVER overlaps tools!)
+function evalCaveWallWithTorchSDF(pWorld, wallPos = v3(-0.88, -0.10, -0.78)) {
+  const pillar = evalMinecraftBlockSDF(pWorld, {
+    pos: wallPos,
+    scale: 1.0,
+    type: "cobble-block"
+  });
+  const topStone = evalMinecraftBlockSDF(pWorld, {
+    pos: v3(wallPos.x, wallPos.y + 0.72, wallPos.z),
+    scale: 1.0,
+    type: "stone-block"
+  });
+  const pT = rotX(sub3(pWorld, v3(wallPos.x + 0.08, wallPos.y + 0.56, wallPos.z + 0.42)), -0.38);
+  const dStick = sdBox(sub3(pT, v3(0, -0.05, 0)), v3(0.026, 0.13, 0.026));
+  const dFlame = sdBox(sub3(pT, v3(0, 0.11, 0)), v3(0.036, 0.038, 0.036));
+  let best = pillar.d < topStone.d ? pillar : topStone;
+  if (dStick < best.d) best = { d: dStick, color: [146, 102, 52], roughness: 0.44, emissive: 0 };
+  if (dFlame < best.d) best = { d: dFlame, color: [255, 224, 92], roughness: 0.08, emissive: 0.95 };
+  return best;
 }
 
 // Case 01: Diamond Cave Creeper Ambush
@@ -1289,7 +1332,7 @@ export function buildDiamondCreeperScene(shotIndex, phase = 0.5) {
         bgBot: caveBgBot,
         floorY: -0.68,
         floorType: "stone",
-        warmLight: 0.25
+        warmLight: 0.22
       },
       sceneFn: (p) => {
         const av = evalMinecraftAvatarSDF(p, {
@@ -1308,16 +1351,16 @@ export function buildDiamondCreeperScene(shotIndex, phase = 0.5) {
           type: "diamond-ore",
           cracks: phase
         });
-        const torch = evalCaveTorchSDF(p, v3(0.02, 0.48, -0.52));
+        const wall = evalCaveWallWithTorchSDF(p, v3(-0.92, -0.32, -0.78));
         let best = av.d < ore.d ? av : ore;
-        if (torch.d < best.d) best = torch;
+        if (wall.d < best.d) best = wall;
         return best;
       }
     };
   }
 
   if (shotIndex === 1) {
-    // Shot 2: Ore shatters into floating diamond drop, revealing green Creeper right behind it!
+    // Shot 2: Ore shatters into spinning 16x16x1 Diamond Gem item, revealing green Creeper right behind it!
     const bob = Math.sin(phase * Math.PI * 2) * 0.05;
     return {
       cam: {
@@ -1328,7 +1371,7 @@ export function buildDiamondCreeperScene(shotIndex, phase = 0.5) {
         bgBot: caveBgBot,
         floorY: -0.68,
         floorType: "stone",
-        warmLight: 0.22
+        warmLight: 0.20
       },
       sceneFn: (p) => {
         const av = evalMinecraftAvatarSDF(p, {
@@ -1343,21 +1386,19 @@ export function buildDiamondCreeperScene(shotIndex, phase = 0.5) {
           pos: v3(0.36, -0.25, -0.04),
           yaw: -0.35
         });
-        const torch = evalCaveTorchSDF(p, v3(-0.02, 0.52, -0.55));
-        const pDrop = rotY(sub3(p, v3(0.0, -0.18 + bob, 0.28)), phase * Math.PI * 2);
-        const dDrop = sdBox(pDrop, v3(0.075, 0.075, 0.028));
+        const wall = evalCaveWallWithTorchSDF(p, v3(-0.95, -0.32, -0.82));
+        const pDrop = rotY(sub3(p, v3(0.0, -0.16 + bob, 0.28)), phase * Math.PI * 2);
+        const gem = evalVoxelSprite16x16(pDrop, DIAMOND_ITEM_16, 0.014, 0.014, "item");
         let best = av.d < creeper.d ? av : creeper;
-        if (torch.d < best.d) best = torch;
-        if (dDrop < best.d) {
-          best = { d: dDrop, color: [74, 237, 217], roughness: 0.1, emissive: 0.55 };
-        }
+        if (wall.d < best.d) best = wall;
+        if (gem.d < best.d) best = { ...gem, emissive: 0.35 };
         return best;
       }
     };
   }
 
   if (shotIndex === 2) {
-    // Shot 3: Creeper flashes white and swells in boxy scale; Steve raises both 4x12x4 arms in panic
+    // Shot 3: Creeper flashes white (with visible Creeper face!) and swells in boxy scale; Steve raises arms
     const isFlash = Math.sin(phase * Math.PI * 5) > 0;
     const swell = 1.0 + 0.14 * phase;
     return {
@@ -1391,7 +1432,7 @@ export function buildDiamondCreeperScene(shotIndex, phase = 0.5) {
     };
   }
 
-  // Shot 4: Cubic white explosion smoke blocks + Steve in red-tinted Minecraft hurt knockback + dropped pickaxe
+  // Shot 4: Textured Minecraft explosion smoke puffs + Steve in red-tinted hurt knockback + dropped pickaxe
   const spread = mix(0.14, 0.38, phase);
   return {
     cam: {
@@ -1417,14 +1458,15 @@ export function buildDiamondCreeperScene(shotIndex, phase = 0.5) {
         hurtTint: true
       });
       const pDroppedPick = rotY(rotZ(sub3(p, v3(-0.02, -0.44, 0.28)), 0.45), phase * Math.PI * 2);
-      const pick = evalVoxelSprite16x16(pDroppedPick, PICKAXE_SPRITE_16, 0.024, 0.016);
-      const dSmoke1 = sdBox(sub3(p, v3(0.36 + spread * 0.25, 0.18 + spread * 0.2, 0)), v3(0.13, 0.13, 0.13));
-      const dSmoke2 = sdBox(sub3(p, v3(0.22 - spread * 0.12, 0.34 + spread * 0.15, -0.10)), v3(0.10, 0.10, 0.10));
-      const dSmoke3 = sdBox(sub3(p, v3(0.44, -0.10 + spread * 0.15, 0.14)), v3(0.11, 0.11, 0.11));
-      const dSmoke = Math.min(dSmoke1, dSmoke2, dSmoke3);
+      const pick = evalVoxelSprite16x16(pDroppedPick, PICKAXE_SPRITE_16, 0.024, 0.016, "tool");
+      const sm1 = evalVoxelSmokePuff(p, v3(0.36 + spread * 0.25, 0.18 + spread * 0.2, 0), 0.12);
+      const sm2 = evalVoxelSmokePuff(p, v3(0.22 - spread * 0.12, 0.34 + spread * 0.15, -0.10), 0.095);
+      const sm3 = evalVoxelSmokePuff(p, v3(0.44, -0.10 + spread * 0.15, 0.14), 0.105);
       let best = av;
-      if (pick.d < best.d) best = { ...pick, emissive: 0.18 };
-      if (dSmoke < best.d) best = { d: dSmoke, color: [241, 245, 249], roughness: 0.3, emissive: 0.25 };
+      if (pick.d < best.d) best = { ...pick, emissive: 0.15 };
+      for (const sm of [sm1, sm2, sm3]) {
+        if (sm.d < best.d) best = sm;
+      }
       return best;
     }
   };
@@ -1434,10 +1476,10 @@ export function buildDiamondCreeperScene(shotIndex, phase = 0.5) {
 export function buildCozyLanternScene(shotIndex, phase = 0.5) {
   const skyTop = shotIndex >= 2 ? [49, 46, 129] : [125, 211, 252];
   const skyBot = shotIndex >= 2 ? [253, 186, 116] : [240, 249, 255];
-  const warm = shotIndex >= 2 ? 0.65 : 0.0;
+  const warm = shotIndex >= 2 ? 0.55 : 0.0;
 
   if (shotIndex === 0) {
-    // Shot 1: Alex snapping a 16x16x16 Crafting Table onto the oak/grass diorama
+    // Shot 1: Alex snapping a 16x16x16 Crafting Table onto the grass/oak cabin corner
     const dropY = mix(0.08, -0.32, smoothstep(0, 0.65, phase));
     return {
       cam: {
@@ -1465,7 +1507,15 @@ export function buildCozyLanternScene(shotIndex, phase = 0.5) {
           scale: 0.92,
           type: "crafting-table"
         });
-        return av.d < table.d ? av : table;
+        const wall = evalMinecraftBlockSDF(p, {
+          pos: v3(0.58, -0.32, -0.62),
+          yaw: -0.28,
+          scale: 0.92,
+          type: "oak-planks"
+        });
+        let best = av.d < table.d ? av : table;
+        if (wall.d < best.d) best = wall;
+        return best;
       }
     };
   }
@@ -1505,7 +1555,7 @@ export function buildCozyLanternScene(shotIndex, phase = 0.5) {
   }
 
   if (shotIndex === 2) {
-    // Shot 3: Raising a glowing warm Voxel Lantern under BSL twilight shader
+    // Shot 3: Raising a 3D iron-framed glowing Voxel Lantern beside the Crafting Table
     return {
       cam: {
         ro: v3(0.20, 0.36, 2.52),
@@ -1521,10 +1571,10 @@ export function buildCozyLanternScene(shotIndex, phase = 0.5) {
         const av = evalMinecraftAvatarSDF(p, {
           pos: v3(-0.26, 0, 0),
           yaw: 0.32,
-          armRPitch: -1.15,
+          armRPitch: -0.78,
           expression: "happy",
           theme: "alex",
-          heldItem: "lantern"
+          heldItem: "none"
         });
         const table = evalMinecraftBlockSDF(p, {
           pos: v3(0.38, -0.32, -0.04),
@@ -1532,12 +1582,15 @@ export function buildCozyLanternScene(shotIndex, phase = 0.5) {
           scale: 0.9,
           type: "crafting-table"
         });
-        return av.d < table.d ? av : table;
+        const topLantern = evalLanternSDF(p, v3(0.38, 0.148, -0.04), 0.9);
+        let best = av.d < table.d ? av : table;
+        if (topLantern.d < best.d) best = topLantern;
+        return best;
       }
     };
   }
 
-  // Shot 4: Cozy grass block diorama with Pink Voxel Axolotl & floating red pixel heart
+  // Shot 4: Cozy grass block diorama with Pink Voxel Axolotl & true 16x16x1 Pixel Heart sprite!
   const heartY = mix(0.22, 0.42, phase);
   return {
     cam: {
@@ -1563,23 +1616,21 @@ export function buildCozyLanternScene(shotIndex, phase = 0.5) {
         pos: v3(0.32, -0.54, 0.16),
         yaw: -0.45
       });
-      const dHeart = sdBox(sub3(p, v3(0.32, -0.18 + heartY * 0.4, 0.16)), v3(0.055, 0.055, 0.02));
+      const pHeart = rotY(sub3(p, v3(0.32, -0.28 + phase * 0.07, 0.16)), -0.35);
+      const heart = evalVoxelSprite16x16(pHeart, HEART_16, 0.011, 0.010, "tool");
       let best = av.d < axo.d ? av : axo;
-      if (dHeart < best.d) {
-        best = { d: dHeart, color: [244, 63, 94], roughness: 0.15, emissive: 0.45 };
-      }
+      if (heart.d < best.d) best = { ...heart, emissive: 0.35 };
       return best;
     }
   };
 }
 
-// Case 03: Pro Diamond Builder vs. Noob TNT Prank
+// Case 03: Pro Diamond Builder vs. Noob TNT Prank (Stone-Brick Fortress Floor!)
 export function buildProVsNoobTntScene(shotIndex, phase = 0.5) {
-  const bgTop = [165, 180, 252];
-  const bgBot = [238, 242, 255];
+  const bgTop = [147, 197, 253];
+  const bgBot = [238, 246, 255];
 
   if (shotIndex === 0) {
-    // Shot 1: Left Diamond Knight with Diamond Sword vs Right Steve Noob holding mini TNT
     return {
       cam: {
         ro: v3(0, 0.30, 2.82),
@@ -1588,7 +1639,7 @@ export function buildProVsNoobTntScene(shotIndex, phase = 0.5) {
         bgTop,
         bgBot,
         floorY: -0.68,
-        floorType: "stone"
+        floorType: "stone-bricks"
       },
       sceneFn: (p) => {
         const pro = evalMinecraftAvatarSDF(p, {
@@ -1614,7 +1665,6 @@ export function buildProVsNoobTntScene(shotIndex, phase = 0.5) {
   }
 
   if (shotIndex === 1) {
-    // Shot 2: Noob slams a full 16x16x16 TNT Block right onto the floor between them
     return {
       cam: {
         ro: v3(0.08, 0.36, 2.85),
@@ -1623,7 +1673,7 @@ export function buildProVsNoobTntScene(shotIndex, phase = 0.5) {
         bgTop,
         bgBot,
         floorY: -0.68,
-        floorType: "stone"
+        floorType: "stone-bricks"
       },
       sceneFn: (p) => {
         const pro = evalMinecraftAvatarSDF(p, {
@@ -1657,7 +1707,6 @@ export function buildProVsNoobTntScene(shotIndex, phase = 0.5) {
   }
 
   if (shotIndex === 2) {
-    // Shot 3: Primed TNT flashes bright white and swells while both lean back in panic
     const isFlash = Math.sin(phase * Math.PI * 5) > 0;
     const swell = 0.84 + 0.15 * phase;
     return {
@@ -1668,7 +1717,7 @@ export function buildProVsNoobTntScene(shotIndex, phase = 0.5) {
         bgTop: [254, 202, 202],
         bgBot: [254, 242, 242],
         floorY: -0.68,
-        floorType: "stone"
+        floorType: "stone-bricks"
       },
       sceneFn: (p) => {
         const pro = evalMinecraftAvatarSDF(p, {
@@ -1705,7 +1754,6 @@ export function buildProVsNoobTntScene(shotIndex, phase = 0.5) {
     };
   }
 
-  // Shot 4: Both stare deadpan (-_-) at the camera amidst cubic white explosion smoke
   return {
     cam: {
       ro: v3(0, 0.28, 2.80),
@@ -1714,7 +1762,7 @@ export function buildProVsNoobTntScene(shotIndex, phase = 0.5) {
       bgTop: [148, 163, 184],
       bgBot: [226, 232, 240],
       floorY: -0.68,
-      floorType: "stone"
+      floorType: "stone-bricks"
     },
     sceneFn: (p) => {
       const pro = evalMinecraftAvatarSDF(p, {
@@ -1737,14 +1785,11 @@ export function buildProVsNoobTntScene(shotIndex, phase = 0.5) {
         theme: "steve",
         heldItem: "none"
       });
-      const dSmoke = Math.min(
-        sdBox(sub3(p, v3(0, -0.42, 0.22)), v3(0.13, 0.11, 0.13)),
-        sdBox(sub3(p, v3(-0.18, -0.48, 0.28)), v3(0.09, 0.08, 0.09))
-      );
+      const sm1 = evalVoxelSmokePuff(p, v3(0, -0.42, 0.22), 0.115);
+      const sm2 = evalVoxelSmokePuff(p, v3(-0.18, -0.48, 0.28), 0.085);
       let best = pro.d < noob.d ? pro : noob;
-      if (dSmoke < best.d) {
-        best = { d: dSmoke, color: [241, 245, 249], roughness: 0.35, emissive: 0.1 };
-      }
+      if (sm1.d < best.d) best = sm1;
+      if (sm2.d < best.d) best = sm2;
       return best;
     }
   };
@@ -1783,9 +1828,21 @@ export function buildRedstoneChainScene(shotIndex, phase = 0.5) {
           type: "sticky-piston",
           extend: 0.05
         });
-        const dDust = sdBox(sub3(p, v3(0.0, -0.66, 0.22)), v3(0.32, 0.018, 0.045));
+        // Authentic Redstone Dust cross + pixel wire + Redstone Torch on the stone floor!
+        const dWireX = sdBox(sub3(p, v3(-0.02, -0.672, 0.16)), v3(0.28, 0.008, 0.026));
+        const dWireZ = sdBox(sub3(p, v3(-0.16, -0.672, 0.16)), v3(0.026, 0.008, 0.11));
+        const dTorchStick = sdBox(sub3(p, v3(-0.24, -0.59, 0.18)), v3(0.020, 0.08, 0.020));
+        const dTorchHead = sdBox(sub3(p, v3(-0.24, -0.49, 0.18)), v3(0.026, 0.026, 0.026));
         let best = av.d < piston.d ? av : piston;
-        if (dDust < best.d) best = { d: dDust, color: [239, 68, 68], roughness: 0.12, emissive: 0.85 };
+        const dWire = Math.min(dWireX, dWireZ);
+        if (dWire < best.d) {
+          const rx = Math.floor((p.x + 2.0) / 0.025);
+          const rz = Math.floor((p.z + 2.0) / 0.025);
+          const bright = ((rx * 7 + rz * 13) & 3) === 0;
+          best = { d: dWire, color: bright ? [255, 72, 72] : [185, 20, 20], roughness: 0.25, emissive: 0.78 };
+        }
+        if (dTorchStick < best.d) best = { d: dTorchStick, color: [132, 94, 52], roughness: 0.55, emissive: 0 };
+        if (dTorchHead < best.d) best = { d: dTorchHead, color: [255, 64, 64], roughness: 0.15, emissive: 0.92 };
         return best;
       }
     };
@@ -2012,13 +2069,17 @@ export function buildEndermanHeistScene(shotIndex, phase = 0.5) {
         heldItem: "none"
       });
       const en = evalEndermanSDF(p, {
-        pos: v3(0.34, 0.12, -0.04),
+        pos: v3(0.34, 0.0, -0.04),
         yaw: -0.25,
         carriesGrass: true
       });
-      const dPart = sdBox(sub3(p, v3(0.05, 0.35 + phase * 0.15, 0.22)), v3(0.045, 0.045, 0.045));
+      // Authentic multi-speck Ender teleport pixel particles around Enderman
+      const p1 = sdBox(sub3(p, v3(0.08, 0.34 + phase * 0.12, 0.18)), v3(0.018, 0.018, 0.018));
+      const p2 = sdBox(sub3(p, v3(0.52, 0.52 - phase * 0.10, 0.12)), v3(0.015, 0.015, 0.015));
+      const p3 = sdBox(sub3(p, v3(0.16, -0.12 + phase * 0.14, 0.24)), v3(0.014, 0.014, 0.014));
+      const dPart = Math.min(p1, p2, p3);
       let best = st.d < en.d ? st : en;
-      if (dPart < best.d) best = { d: dPart, color: [217, 70, 239], roughness: 0.1, emissive: 0.9 };
+      if (dPart < best.d) best = { d: dPart, color: [216, 114, 255], roughness: 0.1, emissive: 0.85 };
       return best;
     }
   };
@@ -2105,8 +2166,8 @@ export function buildAxolotlShelterScene(shotIndex, phase = 0.5) {
           theme: "hoodie",
           heldItem: "none"
         });
-        const ax = evalAxolotlSDF(p, { pos: v3(0.30, -0.54, 0.18), yaw: -0.42 });
-        const lamp = evalMinecraftBlockSDF(p, { pos: v3(0.36, -0.32, -0.22), yaw: -0.2, scale: 0.78, type: "redstone-lamp", lit: true });
+        const ax = evalAxolotlSDF(p, { pos: v3(0.18, -0.54, 0.24), yaw: -0.42 });
+        const lamp = evalMinecraftBlockSDF(p, { pos: v3(0.48, -0.32, -0.34), yaw: -0.2, scale: 0.78, type: "redstone-lamp", lit: true });
         let best = av.d < ax.d ? av : ax;
         if (lamp.d < best.d) best = lamp;
         return best;
@@ -2114,7 +2175,7 @@ export function buildAxolotlShelterScene(shotIndex, phase = 0.5) {
     };
   }
 
-  // Shot 4: Cozy loop with floating heart particle above the Pink Axolotl
+  // Shot 4: Cozy loop with floating pixel heart sprite above the Pink Axolotl
   return {
     cam: {
       ro: v3(0.28, 0.38, 2.55),
@@ -2136,9 +2197,10 @@ export function buildAxolotlShelterScene(shotIndex, phase = 0.5) {
         heldItem: "lantern"
       });
       const ax = evalAxolotlSDF(p, { pos: v3(0.30, -0.54, 0.16), yaw: -0.42 });
-      const dHeart = sdBox(sub3(p, v3(0.30, -0.14 + phase * 0.12, 0.16)), v3(0.055, 0.055, 0.02));
+      const pHeart = rotY(sub3(p, v3(0.30, -0.28 + phase * 0.07, 0.16)), -0.35);
+      const heart = evalVoxelSprite16x16(pHeart, HEART_16, 0.011, 0.010, "tool");
       let best = av.d < ax.d ? av : ax;
-      if (dHeart < best.d) best = { d: dHeart, color: [244, 63, 94], roughness: 0.15, emissive: 0.55 };
+      if (heart.d < best.d) best = { ...heart, emissive: 0.35 };
       return best;
     }
   };
@@ -2502,21 +2564,18 @@ export function buildRenderTasks() {
                 flashWhite: isFlash
               });
             }
-            const rSpread = mix(0.14, 0.46, burst);
-            const sSize = mix(0.15, 0.07, burst);
-            const cubes = [
-              sdBox(sub3(p, v3(-rSpread, -0.18 + burst * 0.22, 0.08)), v3(sSize, sSize, sSize)),
-              sdBox(sub3(p, v3(rSpread, -0.14 + burst * 0.26, -0.06)), v3(sSize * 0.9, sSize * 0.9, sSize * 0.9)),
-              sdBox(sub3(p, v3(0.04, 0.02 + burst * 0.32, 0.12)), v3(sSize * 1.05, sSize * 1.05, sSize * 1.05)),
-              sdBox(sub3(p, v3(-0.12, -0.38, -rSpread * 0.8)), v3(sSize * 0.85, sSize * 0.85, sSize * 0.85)),
-              sdBox(sub3(p, v3(0.18, -0.36, rSpread * 0.8)), v3(sSize * 0.85, sSize * 0.85, sSize * 0.85))
+            const rSpread = mix(0.14, 0.42, burst);
+            const sSize = mix(0.14, 0.075, burst);
+            const puffs = [
+              evalVoxelSmokePuff(p, v3(-rSpread, -0.18 + burst * 0.22, 0.08), sSize),
+              evalVoxelSmokePuff(p, v3(rSpread, -0.14 + burst * 0.26, -0.06), sSize * 0.9),
+              evalVoxelSmokePuff(p, v3(0.04, 0.02 + burst * 0.30, 0.12), sSize * 1.05),
+              evalVoxelSmokePuff(p, v3(-0.12, -0.38, -rSpread * 0.8), sSize * 0.85),
+              evalVoxelSmokePuff(p, v3(0.18, -0.36, rSpread * 0.8), sSize * 0.85)
             ];
-            return {
-              d: Math.min(...cubes),
-              color: burst < 0.25 ? [254, 240, 138] : [241, 245, 249],
-              roughness: 0.28,
-              emissive: burst < 0.25 ? 0.75 : 0.25
-            };
+            let bestPuff = puffs[0];
+            for (const pf of puffs) if (pf.d < bestPuff.d) bestPuff = pf;
+            return bestPuff;
           },
           {
             ro: v3(0, 0.34, 2.08),

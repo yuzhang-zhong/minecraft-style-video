@@ -62,6 +62,7 @@ const requiredFiles = [
   "scripts/voxel_spec.mjs",
   "scripts/shot_compiler.mjs",
   "scripts/drift_check.mjs",
+  "scripts/mc_textures.mjs",
   "scripts/render_preview.mjs",
   "assets/library/catalog.json",
   "assets/library/characters/char_steve.png",
