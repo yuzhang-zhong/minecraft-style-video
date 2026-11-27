@@ -39,7 +39,8 @@ export const BUNDLE_FILES = [
   "scripts/shot_compiler.mjs",
   "scripts/drift_check.mjs",
   "scripts/mc_textures.mjs",
-  "scripts/render_preview.mjs"
+  "scripts/render_preview.mjs",
+  "scripts/compose_boards.ps1"
 ]
   .map(normalizeRelativePath)
   .sort();
