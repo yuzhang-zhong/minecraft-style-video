@@ -100,6 +100,13 @@ Before running multi-shot image-to-video (I2V), lock the character and block pro
 
 [Skill guide (`SKILL.md`)](skills/minecraft-style-video/SKILL.md) · [Voxel geometry, blocks, and shaders](references/voxel-geometry-blocks-and-shaders.md) · [Model prompt playbook](references/model-prompt-playbook.md) · [Drift fixes](references/rescue-and-anti-drift.md) · [Pacing and audio](references/short-video-beats-and-audio.md) · [Story and build templates](references/viral-archetypes-catalog.md) · [Preset catalog](references/classic-minecraft-catalog.md)
 
+## Frequently asked
+
+- **Is this only a static prompt template?** No. It bundles four zero-dependency Node.js CLI tools that lock `8x8x8` / `16x16x16` voxel proportions, lint prompts for style drift, and render local 3D `.mp4` / `.gif` animatics and turnaround sheets before you touch a paid video model.
+- **How does it stop AI video models from drawing five human fingers or round swords?** `voxel_spec.mjs` and `drift_check.mjs` enforce flat `4x4` / `3x4` square block hands, `16x16x1` stepped pixel-extruded tools, unfiltered nearest-neighbor texels, and single-action 4s shot budgets.
+- **Does it require any API key or npm packages?** No API key or `npm install` is needed for the CLI scripts (Node.js 18+ built-in modules only).
+- **Which coding agents and video models does it support?** Works with GitHub Copilot, Claude Code, Codex, Cursor, Gemini CLI (`gh skill install` / `npx skills add`), and compiles prompts for Kling, Seedance/Jimeng, Hailuo, Wan, Sora, and Runway.
+
 ## 中文简介
 
 `minecraft-style-video` 是面向 Claude Code、Codex、GitHub Copilot 与 Cursor 的**《我的世界》（Minecraft）体素短视频 Agent Skill 与零依赖 Node.js CLI 工具包**。它在生成前锁定 `8×8×8` 像素方块头、`8×12×4` 躯干、`4×4` 无手指平头方块手、`16×16×16` 像素方块与 `16×16×1` 挤出式像素钻石镐/剑几何不变量，支持本地离线渲染 9:16 竖屏 3D 动态分镜预览（MP4 / GIF / 三视图设定卡），并为可灵（Kling）、即梦（Seedance）、海螺（Hailuo）、通义万相（Wan）、Sora 与 Runway 编译图生视频（I2V）/ 文生视频（T2V）提示词及五指/圆滑金属反漂移修复补丁。详见[简体中文说明](README.zh-CN.md)。

@@ -1,0 +1,24 @@
+cff-version: 1.2.0
+message: "If you use or reference this project, please cite it using the metadata below."
+type: software
+title: "Minecraft Style Video Skill: Pixel-Locked 9:16 Voxel Shorts, Local 3D Previews, and Anti-Drift Prompts"
+authors:
+  - family-names: "Zhong"
+    given-names: "Yuzhang"
+repository-code: "https://github.com/yuzhang-zhong/minecraft-style-video"
+url: "https://github.com/yuzhang-zhong/minecraft-style-video"
+license: "MIT"
+abstract: "Installable Agent Skill and zero-dependency Node.js CLI for generating 9:16 Minecraft-style voxel character, mob, and block short videos with locked 8x8x8/16x16x16 pixel-grid proportions, local 3D MP4/GIF animatics, storyboards, and Kling/Seedance/Hailuo/Wan/Sora/Runway prompts."
+keywords:
+  - "agent-skill"
+  - "minecraft"
+  - "voxel"
+  - "ai-video"
+  - "short-video"
+  - "storyboard"
+  - "machinima"
+  - "blockbench"
+  - "kling"
+  - "seedance"
+  - "sora"
+  - "runway"
