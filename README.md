@@ -17,7 +17,7 @@ An Agent Skill and offline 3D CLI tool to plan 9:16 vertical Minecraft voxel cha
 
 </div>
 
-> **Quick answer:** `minecraft-style-video` is an installable coding-agent Skill and offline CLI for making vertical (`9:16`) blocky voxel character and block short videos—producing local 3D MP4/GIF animatic previews, multi-shot storyboards, and anti-drift prompts (preventing five human fingers on cube hands or smooth round tools) without needing a video-model account or API key.
+> **Quick answer:** `minecraft-style-video` is an installable coding-agent Skill and offline CLI for making vertical (`9:16`) blocky voxel character and block short videos **without Blockbench** keyframing, video-model accounts, or API keys—producing local 3D MP4/GIF animatic previews, multi-shot storyboards, and anti-drift prompts (stopping five human fingers on cube hands, blurry pixel textures, or smooth round metal swords).
 
 [![Four synchronized 9:16 Minecraft voxel short previews: diamond cave Creeper ambush, cozy lantern cabin build, Diamond Pro vs. Noob TNT, and Enderman grass block heist](assets/showcase/minecraft_shorts_reel.gif)](assets/showcase/minecraft_shorts_reel.mp4)
 
