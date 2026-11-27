@@ -6,11 +6,11 @@
 
 9:16 Minecraft ボクセルショート動画を設計：`8x8x8` キャラと `16x16x16` ブロック比率を固定し、カット別プロンプトとローカル 3D 動画プレビューを生成します。
 
-[![Agent Skill](https://img.shields.io/badge/Skill-SKILL.md-10b981?style=flat-square)](../../SKILL.md)
+[![Agent Skill](https://img.shields.io/badge/Skill-SKILL.md-10b981?style=flat-square)](../../skills/minecraft-style-video/SKILL.md)
 [![Node.js 18+](https://img.shields.io/badge/Node.js-18%2B-268354?style=flat-square)](#クイックスタート)
 [![MIT License](https://img.shields.io/badge/License-MIT-2563eb?style=flat-square)](../../LICENSE)
 
-**[アニメーション例](#アニメーション例)** · [ブロック＆アイテム動線](#ブロックとアイテムのループ動画) · [クイックスタート](#クイックスタート) · [Skill ガイド](../../SKILL.md)
+**[アニメーション例](#アニメーション例)** · [ブロック＆アイテム動線](#ブロックとアイテムのループ動画) · [クイックスタート](#クイックスタート) · [Skill ガイド](../../skills/minecraft-style-video/SKILL.md)
 
 [English](../../README.md) · [简体中文](../../README.zh-CN.md) · [繁體中文](README.zh-TW.md) · **日本語** · [한국어](README.ko.md) · [Español](README.es.md) · [Français](README.fr.md) · [Deutsch](README.de.md) · [Português](README.pt-BR.md) · [Русский](README.ru.md)
 
@@ -60,6 +60,6 @@ node scripts/drift_check.mjs --prompt "A cute Minecraft boy holding a round meta
 マルチショット I2V では先に[三面図リファレンス](../../assets/showcase/steve_alex_turnaround_sheet.en.png)で開始フレームを固定し、4〜5秒につき主要アクションを1つに絞ってください（[崩れ比較ボード](../../assets/showcase/drift_rescue_comparison.en.png) · [ワークフロー図](../pipeline.svg)）。
 
 - [`voxel_spec.mjs`](../../scripts/voxel_spec.mjs) · [`shot_compiler.mjs`](../../scripts/shot_compiler.mjs) · [`drift_check.mjs`](../../scripts/drift_check.mjs) · [`render_preview.mjs`](../../scripts/render_preview.mjs)
-- [Skill ガイド (`SKILL.md`)](../../SKILL.md) · [ボクセル比率＆ブロック仕様](../../references/voxel-geometry-blocks-and-shaders.md) · [モデル別プロンプト](../../references/model-prompt-playbook.md) · [破綻修正パッチ](../../references/rescue-and-anti-drift.md) · [テンポ＆効果音](../../references/short-video-beats-and-audio.md) · [テンプレート集](../../references/viral-archetypes-catalog.md)
+- [Skill ガイド (`SKILL.md`)](../../skills/minecraft-style-video/SKILL.md) · [ボクセル比率＆ブロック仕様](../../references/voxel-geometry-blocks-and-shaders.md) · [モデル別プロンプト](../../references/model-prompt-playbook.md) · [破綻修正パッチ](../../references/rescue-and-anti-drift.md) · [テンポ＆効果音](../../references/short-video-beats-and-audio.md) · [テンプレート集](../../references/viral-archetypes-catalog.md)
 
 [MIT License](../../LICENSE)。独立したオープンソースプロジェクトであり、Mojang Studios および Microsoft とは無関係です。

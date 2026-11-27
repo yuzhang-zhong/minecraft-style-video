@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.3.1
+
+- Added self-contained standard Agent Skill bundle at `skills/minecraft-style-video/` with `scripts/sync_skill_bundle.mjs`, enabling direct installation via `gh skill install` and `npx skills add`.
+- Aligned `.claude-plugin/marketplace.json`, `.claude-plugin/plugin.json`, `.cursor-plugin/plugin.json`, `agents/openai.yaml`, and `package.json` with multi-host skill discovery metadata and bilingual search triggers.
+
 ## 1.3.0
 
 - Renamed repository and skill to `minecraft-style-video` with editorial-first default English `README.md`, `README.zh-CN.md`, and 8 additional language READMEs (`docs/i18n/`) plus 10-language CLI `--lang` support.

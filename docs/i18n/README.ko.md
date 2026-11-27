@@ -6,11 +6,11 @@
 
 9:16 마인크래프트 복셀 쇼츠 기획: `8x8x8` 캐릭터와 `16x16x16` 블록 비율을 고정하고 컷별 프롬프트와 로컬 3D 모션 프리뷰를 생성합니다.
 
-[![Agent Skill](https://img.shields.io/badge/Skill-SKILL.md-10b981?style=flat-square)](../../SKILL.md)
+[![Agent Skill](https://img.shields.io/badge/Skill-SKILL.md-10b981?style=flat-square)](../../skills/minecraft-style-video/SKILL.md)
 [![Node.js 18+](https://img.shields.io/badge/Node.js-18%2B-268354?style=flat-square)](#빠른-시작)
 [![MIT License](https://img.shields.io/badge/License-MIT-2563eb?style=flat-square)](../../LICENSE)
 
-**[애니메이션 예제](#애니메이션-예제)** · [블록 & 아이템 루프](#복셀-블록-및-아이템-루프) · [빠른 시작](#빠른-시작) · [Skill 가이드](../../SKILL.md)
+**[애니메이션 예제](#애니메이션-예제)** · [블록 & 아이템 루프](#복셀-블록-및-아이템-루프) · [빠른 시작](#빠른-시작) · [Skill 가이드](../../skills/minecraft-style-video/SKILL.md)
 
 [English](../../README.md) · [简体中文](../../README.zh-CN.md) · [繁體中文](README.zh-TW.md) · [日本語](README.ja.md) · **한국어** · [Español](README.es.md) · [Français](README.fr.md) · [Deutsch](README.de.md) · [Português](README.pt-BR.md) · [Русский](README.ru.md)
 
@@ -60,6 +60,6 @@ node scripts/drift_check.mjs --prompt "A cute Minecraft boy holding a round meta
 멀티샷 I2V 제작 시 [3면도 레퍼런스](../../assets/showcase/steve_alex_turnaround_sheet.en.png)로 첫 프레임을 고정하고 4~5초 클립당 핵심 동작을 하나로 제한하세요 ([왜곡 비교 보드](../../assets/showcase/drift_rescue_comparison.en.png) · [워크플로 다이어그램](../pipeline.svg)).
 
 - [`voxel_spec.mjs`](../../scripts/voxel_spec.mjs) · [`shot_compiler.mjs`](../../scripts/shot_compiler.mjs) · [`drift_check.mjs`](../../scripts/drift_check.mjs) · [`render_preview.mjs`](../../scripts/render_preview.mjs)
-- [Skill 가이드 (`SKILL.md`)](../../SKILL.md) · [복셀 비율 & 블록 규격](../../references/voxel-geometry-blocks-and-shaders.md) · [모델별 프롬프트](../../references/model-prompt-playbook.md) · [왜곡 수정 패치](../../references/rescue-and-anti-drift.md) · [템포 & 효과음](../../references/short-video-beats-and-audio.md) · [스토리 템플릿](../../references/viral-archetypes-catalog.md)
+- [Skill 가이드 (`SKILL.md`)](../../skills/minecraft-style-video/SKILL.md) · [복셀 비율 & 블록 규격](../../references/voxel-geometry-blocks-and-shaders.md) · [모델별 프롬프트](../../references/model-prompt-playbook.md) · [왜곡 수정 패치](../../references/rescue-and-anti-drift.md) · [템포 & 효과음](../../references/short-video-beats-and-audio.md) · [스토리 템플릿](../../references/viral-archetypes-catalog.md)
 
 [MIT License](../../LICENSE). Mojang Studios 및 Microsoft와 무관한 독립 오픈소스 프로젝트입니다.

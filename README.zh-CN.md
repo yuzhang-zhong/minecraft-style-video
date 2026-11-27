@@ -6,11 +6,11 @@
 
 做一支 9:16《我的世界》体素短片：固定 `8×8×8` 小人与 `16×16×16` 方块比例，逐镜编译提示词，先在本地看一遍动态分镜。
 
-[![Agent Skill](https://img.shields.io/badge/Skill-SKILL.md-10b981?style=flat-square)](SKILL.md)
+[![Agent Skill](https://img.shields.io/badge/Skill-SKILL.md-10b981?style=flat-square)](skills/minecraft-style-video/SKILL.md)
 [![命令行需要 Node.js 18+](https://img.shields.io/badge/Node.js-18%2B-268354?style=flat-square)](#安装与开始)
 [![MIT 许可证](https://img.shields.io/badge/License-MIT-2563eb?style=flat-square)](LICENSE)
 
-**[短片动画示例](#短片动画示例)** · [方块与道具动效](#方块与道具动效) · [安装与开始](#安装与开始) · [Skill 指南](SKILL.md)
+**[短片动画示例](#短片动画示例)** · [方块与道具动效](#方块与道具动效) · [安装与开始](#安装与开始) · [Skill 指南](skills/minecraft-style-video/SKILL.md)
 
 [English](README.md) · **简体中文** · [更多语言](#语言)
 
@@ -85,7 +85,7 @@ node scripts/drift_check.mjs --prompt "A cute Minecraft boy holding a round meta
 | [`drift_check.mjs`](scripts/drift_check.mjs) | 检查真人五指、圆棍工具、贴图糊化与单镜动作过多，输出修补版提示词。 |
 | [`render_preview.mjs`](scripts/render_preview.mjs) | 本地渲染 3D 三视图、分镜表、方块循环动效、GIF 和 MP4（Windows 合成使用 PowerShell `System.Drawing` 与 `ffmpeg`）。 |
 
-[Skill 指南 (`SKILL.md`)](SKILL.md) · [体素比例、方块与光影规范](references/voxel-geometry-blocks-and-shaders.md) · [各模型提示词手册](references/model-prompt-playbook.md) · [跑偏诊断与修补](references/rescue-and-anti-drift.md) · [竖屏节奏与原版音效](references/short-video-beats-and-audio.md) · [六套短片与建造模板](references/viral-archetypes-catalog.md) · [预设参数目录](references/classic-minecraft-catalog.md)
+[Skill 指南 (`SKILL.md`)](skills/minecraft-style-video/SKILL.md) · [体素比例、方块与光影规范](references/voxel-geometry-blocks-and-shaders.md) · [各模型提示词手册](references/model-prompt-playbook.md) · [跑偏诊断与修补](references/rescue-and-anti-drift.md) · [竖屏节奏与原版音效](references/short-video-beats-and-audio.md) · [六套短片与建造模板](references/viral-archetypes-catalog.md) · [预设参数目录](references/classic-minecraft-catalog.md)
 
 ## 语言
 

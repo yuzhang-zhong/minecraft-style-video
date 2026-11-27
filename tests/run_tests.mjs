@@ -79,5 +79,5 @@ test("validate_skill CLI verifies repository files, versions, relative links, an
     cwd: ROOT,
     encoding: "utf8"
   });
-  assert.match(out, /minecraft-style-video v1\.3\.0 package is valid/);
+  assert.match(out, /minecraft-style-video v1\.3\.1 package is valid/);
 });

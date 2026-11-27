@@ -38,7 +38,7 @@ const readmeFiles = [
 ];
 
 const requiredFiles = [
-  "SKILL.md",
+  "skills/minecraft-style-video/SKILL.md",
   ...readmeFiles,
   "LICENSE",
   "CHANGELOG.md",
@@ -50,6 +50,7 @@ const requiredFiles = [
   "assets/icon.svg",
   "docs/pipeline.svg",
   "docs/pipeline.zh.svg",
+  "scripts/sync_skill_bundle.mjs",
   "references/voxel-geometry-blocks-and-shaders.md",
   "references/classic-minecraft-catalog.md",
   "references/model-prompt-playbook.md",
@@ -183,7 +184,7 @@ for (const docRel of docsToCheck) {
   }
 }
 
-const skillText = readUtf8("SKILL.md");
+const skillText = readUtf8("skills/minecraft-style-video/SKILL.md");
 const fmMatch = skillText.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n/);
 if (!fmMatch) {
   fail("SKILL.md must begin with YAML frontmatter");

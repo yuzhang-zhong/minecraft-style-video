@@ -6,11 +6,11 @@
 
 Планируйте вертикальные 9:16 ролики в стиле Minecraft: фиксируйте воксельные пропорции `8x8x8` и `16x16x16`, компилируйте промпты по планам и проверяйте движение локально.
 
-[![Agent Skill](https://img.shields.io/badge/Skill-SKILL.md-10b981?style=flat-square)](../../SKILL.md)
+[![Agent Skill](https://img.shields.io/badge/Skill-SKILL.md-10b981?style=flat-square)](../../skills/minecraft-style-video/SKILL.md)
 [![Node.js 18+](https://img.shields.io/badge/Node.js-18%2B-268354?style=flat-square)](#быстрый-старт)
 [![MIT License](https://img.shields.io/badge/License-MIT-2563eb?style=flat-square)](../../LICENSE)
 
-**[Анимированные примеры](#анимированные-примеры)** · [Циклы блоков](#анимации-блоков-и-предметов) · [Быстрый старт](#быстрый-старт) · [Руководство Skill](../../SKILL.md)
+**[Анимированные примеры](#анимированные-примеры)** · [Циклы блоков](#анимации-блоков-и-предметов) · [Быстрый старт](#быстрый-старт) · [Руководство Skill](../../skills/minecraft-style-video/SKILL.md)
 
 [English](../../README.md) · [简体中文](../../README.zh-CN.md) · [繁體中文](README.zh-TW.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [Español](README.es.md) · [Français](README.fr.md) · [Deutsch](README.de.md) · [Português](README.pt-BR.md) · **Русский**
 
@@ -60,6 +60,6 @@ node scripts/drift_check.mjs --prompt "A cute Minecraft boy holding a round meta
 Начинайте многоплановый I2V с [листа в трёх проекциях](../../assets/showcase/steve_alex_turnaround_sheet.en.png) и оставляйте одно основное действие на клип 4–5 секунд ([сравнение искажений](../../assets/showcase/drift_rescue_comparison.en.png) · [схема процесса](../pipeline.svg)).
 
 - [`voxel_spec.mjs`](../../scripts/voxel_spec.mjs) · [`shot_compiler.mjs`](../../scripts/shot_compiler.mjs) · [`drift_check.mjs`](../../scripts/drift_check.mjs) · [`render_preview.mjs`](../../scripts/render_preview.mjs)
-- [Руководство Skill (`SKILL.md`)](../../SKILL.md) · [Воксельная геометрия и блоки](../../references/voxel-geometry-blocks-and-shaders.md) · [Справочник промптов](../../references/model-prompt-playbook.md) · [Исправление искажений](../../references/rescue-and-anti-drift.md) · [Ритм и звук](../../references/short-video-beats-and-audio.md) · [Шаблоны сюжетов](../../references/viral-archetypes-catalog.md)
+- [Руководство Skill (`SKILL.md`)](../../skills/minecraft-style-video/SKILL.md) · [Воксельная геометрия и блоки](../../references/voxel-geometry-blocks-and-shaders.md) · [Справочник промптов](../../references/model-prompt-playbook.md) · [Исправление искажений](../../references/rescue-and-anti-drift.md) · [Ритм и звук](../../references/short-video-beats-and-audio.md) · [Шаблоны сюжетов](../../references/viral-archetypes-catalog.md)
 
 [Лицензия MIT](../../LICENSE). Независимый проект с открытым исходным кодом, не связанный с Mojang Studios или Microsoft.

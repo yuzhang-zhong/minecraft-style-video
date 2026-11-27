@@ -6,11 +6,11 @@
 
 規劃 9:16《Minecraft》體素短片：固定 `8×8×8` 小人與 `16×16×16` 方塊比例，逐鏡編譯提示詞，先在本地預覽動態分鏡。
 
-[![Agent Skill](https://img.shields.io/badge/Skill-SKILL.md-10b981?style=flat-square)](../../SKILL.md)
+[![Agent Skill](https://img.shields.io/badge/Skill-SKILL.md-10b981?style=flat-square)](../../skills/minecraft-style-video/SKILL.md)
 [![Node.js 18+](https://img.shields.io/badge/Node.js-18%2B-268354?style=flat-square)](#快速開始)
 [![MIT License](https://img.shields.io/badge/License-MIT-2563eb?style=flat-square)](../../LICENSE)
 
-**[短片動畫範例](#短片動畫範例)** · [方塊與道具動效](#方塊與道具動效) · [快速開始](#快速開始) · [Skill 指南](../../SKILL.md)
+**[短片動畫範例](#短片動畫範例)** · [方塊與道具動效](#方塊與道具動效) · [快速開始](#快速開始) · [Skill 指南](../../skills/minecraft-style-video/SKILL.md)
 
 [English](../../README.md) · [简体中文](../../README.zh-CN.md) · **繁體中文** · [日本語](README.ja.md) · [한국어](README.ko.md) · [Español](README.es.md) · [Français](README.fr.md) · [Deutsch](README.de.md) · [Português](README.pt-BR.md) · [Русский](README.ru.md)
 
@@ -60,6 +60,6 @@ node scripts/drift_check.mjs --prompt "A cute Minecraft boy holding a round meta
 多鏡頭 I2V 請先以[三視圖設定](../../assets/showcase/steve_alex_turnaround_sheet.zh.png)固定首幀，每段 4 至 5 秒片段僅留一個主要動作（常見跑偏見[防串味對比圖](../../assets/showcase/drift_rescue_comparison.zh.png)與[工作流圖](../pipeline.zh.svg)）。
 
 - [`voxel_spec.mjs`](../../scripts/voxel_spec.mjs) · [`shot_compiler.mjs`](../../scripts/shot_compiler.mjs) · [`drift_check.mjs`](../../scripts/drift_check.mjs) · [`render_preview.mjs`](../../scripts/render_preview.mjs)
-- [Skill 指南 (`SKILL.md`)](../../SKILL.md) · [體素與方塊規範](../../references/voxel-geometry-blocks-and-shaders.md) · [各模型提示詞手冊](../../references/model-prompt-playbook.md) · [跑偏修補](../../references/rescue-and-anti-drift.md) · [節奏與音效](../../references/short-video-beats-and-audio.md) · [分鏡模板](../../references/viral-archetypes-catalog.md)
+- [Skill 指南 (`SKILL.md`)](../../skills/minecraft-style-video/SKILL.md) · [體素與方塊規範](../../references/voxel-geometry-blocks-and-shaders.md) · [各模型提示詞手冊](../../references/model-prompt-playbook.md) · [跑偏修補](../../references/rescue-and-anti-drift.md) · [節奏與音效](../../references/short-video-beats-and-audio.md) · [分鏡模板](../../references/viral-archetypes-catalog.md)
 
 [MIT 授權](../../LICENSE)。獨立開源專案，與 Mojang Studios 或 Microsoft 無隸屬或背書關係。

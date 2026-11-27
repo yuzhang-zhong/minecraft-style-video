@@ -6,11 +6,11 @@
 
 Planeje vídeos curtos verticais 9:16 estilo Minecraft: trave proporções voxel `8x8x8` e `16x16x16`, compile prompts por plano e visualize o movimento localmente.
 
-[![Agent Skill](https://img.shields.io/badge/Skill-SKILL.md-10b981?style=flat-square)](../../SKILL.md)
+[![Agent Skill](https://img.shields.io/badge/Skill-SKILL.md-10b981?style=flat-square)](../../skills/minecraft-style-video/SKILL.md)
 [![Node.js 18+](https://img.shields.io/badge/Node.js-18%2B-268354?style=flat-square)](#início-rápido)
 [![MIT License](https://img.shields.io/badge/License-MIT-2563eb?style=flat-square)](../../LICENSE)
 
-**[Exemplos animados](#exemplos-animados)** · [Loops de blocos](#loops-de-blocos-e-itens) · [Início rápido](#início-rápido) · [Guia da Skill](../../SKILL.md)
+**[Exemplos animados](#exemplos-animados)** · [Loops de blocos](#loops-de-blocos-e-itens) · [Início rápido](#início-rápido) · [Guia da Skill](../../skills/minecraft-style-video/SKILL.md)
 
 [English](../../README.md) · [简体中文](../../README.zh-CN.md) · [繁體中文](README.zh-TW.md) · [日本語](README.ja.md) · [한국어](README.ko.md) · [Español](README.es.md) · [Français](README.fr.md) · [Deutsch](README.de.md) · **Português** · [Русский](README.ru.md)
 
@@ -60,6 +60,6 @@ node scripts/drift_check.mjs --prompt "A cute Minecraft boy holding a round meta
 Ancore sequências I2V com uma [prancha em três vistas](../../assets/showcase/steve_alex_turnaround_sheet.en.png) e limite cada clipe de 4 a 5 segundos a uma ação principal ([comparação anti-desvio](../../assets/showcase/drift_rescue_comparison.en.png) · [fluxo de trabalho](../pipeline.svg)).
 
 - [`voxel_spec.mjs`](../../scripts/voxel_spec.mjs) · [`shot_compiler.mjs`](../../scripts/shot_compiler.mjs) · [`drift_check.mjs`](../../scripts/drift_check.mjs) · [`render_preview.mjs`](../../scripts/render_preview.mjs)
-- [Guia da Skill (`SKILL.md`)](../../SKILL.md) · [Geometria voxel e blocos](../../references/voxel-geometry-blocks-and-shaders.md) · [Manual de prompts](../../references/model-prompt-playbook.md) · [Correções de desvio](../../references/rescue-and-anti-drift.md) · [Ritmo e áudio](../../references/short-video-beats-and-audio.md) · [Modelos de roteiro](../../references/viral-archetypes-catalog.md)
+- [Guia da Skill (`SKILL.md`)](../../skills/minecraft-style-video/SKILL.md) · [Geometria voxel e blocos](../../references/voxel-geometry-blocks-and-shaders.md) · [Manual de prompts](../../references/model-prompt-playbook.md) · [Correções de desvio](../../references/rescue-and-anti-drift.md) · [Ritmo e áudio](../../references/short-video-beats-and-audio.md) · [Modelos de roteiro](../../references/viral-archetypes-catalog.md)
 
 [Licença MIT](../../LICENSE). Projeto independente, sem afiliação ou endosso da Mojang Studios ou Microsoft.

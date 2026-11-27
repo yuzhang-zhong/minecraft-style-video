@@ -7,15 +7,17 @@
 An Agent Skill and offline 3D CLI tool to plan 9:16 vertical Minecraft voxel character & block short videos: lock `8x8x8` character and `16x16x16` block pixel proportions, compile shot-by-shot storyboard prompts for Kling, Seedance, Hailuo, Wan, Sora, or Runway without human-finger drift, and preview 3D animations locally.<br>
 《我的世界》（MC）方块小人 9:16 竖屏短视频分镜、本地 3D 动画预览与可灵 / 即梦防崩坏提示词 AI Agent Skill。
 
-[![Agent Skill](https://img.shields.io/badge/Skill-SKILL.md-10b981?style=flat-square)](SKILL.md)
+[![Agent Skill](https://img.shields.io/badge/Skill-SKILL.md-10b981?style=flat-square)](skills/minecraft-style-video/SKILL.md)
 [![Node.js 18+ for the CLI](https://img.shields.io/badge/Node.js-18%2B-268354?style=flat-square)](#quick-start)
 [![MIT license](https://img.shields.io/badge/License-MIT-2563eb?style=flat-square)](LICENSE)
 
-**[Animated examples](#animated-examples)** · [Block & item loops](#voxel-block-and-item-loops) · [Quick start](#quick-start) · [Skill guide](SKILL.md)
+**[Animated examples](#animated-examples)** · [Block & item loops](#voxel-block-and-item-loops) · [Quick start](#quick-start) · [Skill guide](skills/minecraft-style-video/SKILL.md)
 
 **English** · [简体中文](README.zh-CN.md) · [More languages](#languages)
 
 </div>
+
+> **Quick answer:** `minecraft-style-video` is an installable coding-agent Skill and offline CLI for making vertical (`9:16`) blocky voxel character and block short videos—producing local 3D MP4/GIF animatic previews, multi-shot storyboards, and anti-drift prompts (preventing five human fingers on cube hands or smooth round tools) without needing a video-model account or API key.
 
 [![Four synchronized 9:16 Minecraft voxel short previews: diamond cave Creeper ambush, cozy lantern cabin build, Diamond Pro vs. Noob TNT, and Enderman grass block heist](assets/showcase/minecraft_shorts_reel.gif)](assets/showcase/minecraft_shorts_reel.mp4)
 
@@ -44,11 +46,19 @@ For object-only shots (redstone contraptions, loot reveals, or isometric block b
 
 ### Use the Agent Skill
 
-Clone into your agent host's skills directory. The path below is for Codex; use `~/.copilot/skills/minecraft-style-video` for GitHub Copilot, or your configured skills folder for Claude Code and Cursor.
+Install from GitHub with the official GitHub CLI Skill command:
 
 ```bash
-git clone https://github.com/yuzhang-zhong/minecraft-style-video.git ~/.codex/skills/minecraft-style-video
+gh skill install yuzhang-zhong/minecraft-style-video minecraft-style-video
 ```
+
+Or install through the cross-agent Skills CLI (Claude Code, Codex, GitHub Copilot, Cursor):
+
+```bash
+npx skills add https://github.com/yuzhang-zhong/minecraft-style-video --skill minecraft-style-video
+```
+
+You can also clone or copy [`skills/minecraft-style-video/`](skills/minecraft-style-video/) into your agent host's skills directory (such as `~/.codex/skills/minecraft-style-video`, `~/.copilot/skills/minecraft-style-video`, or `~/.claude/skills/minecraft-style-video`).
 
 Invoke `minecraft-style-video` in your agent:
 
@@ -88,7 +98,7 @@ Before running multi-shot image-to-video (I2V), lock the character and block pro
 | [`drift_check.mjs`](scripts/drift_check.mjs) | Diagnostic report and patched prompt for human fingers, smooth rods, blurry texels, or action overload. |
 | [`render_preview.mjs`](scripts/render_preview.mjs) | Local 3D voxel turnarounds, contact sheets, object loops, GIFs, and MP4s (uses PowerShell `System.Drawing` and `ffmpeg` on Windows). |
 
-[Skill guide (`SKILL.md`)](SKILL.md) · [Voxel geometry, blocks, and shaders](references/voxel-geometry-blocks-and-shaders.md) · [Model prompt playbook](references/model-prompt-playbook.md) · [Drift fixes](references/rescue-and-anti-drift.md) · [Pacing and audio](references/short-video-beats-and-audio.md) · [Story and build templates](references/viral-archetypes-catalog.md) · [Preset catalog](references/classic-minecraft-catalog.md)
+[Skill guide (`SKILL.md`)](skills/minecraft-style-video/SKILL.md) · [Voxel geometry, blocks, and shaders](references/voxel-geometry-blocks-and-shaders.md) · [Model prompt playbook](references/model-prompt-playbook.md) · [Drift fixes](references/rescue-and-anti-drift.md) · [Pacing and audio](references/short-video-beats-and-audio.md) · [Story and build templates](references/viral-archetypes-catalog.md) · [Preset catalog](references/classic-minecraft-catalog.md)
 
 ## 中文简介
 
