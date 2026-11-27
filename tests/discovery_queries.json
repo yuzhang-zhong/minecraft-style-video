@@ -1,0 +1,351 @@
+{
+  "expectedSkill": "minecraft-style-video",
+  "repository": "yuzhang-zhong/minecraft-style-video",
+  "queries": [
+    {
+      "id": "q01-m1_exact",
+      "method": "M1_exact",
+      "query": "minecraft-style-video Agent Skill",
+      "requiredTerms": [
+        "minecraft-style-video",
+        "Agent Skill"
+      ]
+    },
+    {
+      "id": "q02-m1_exact",
+      "method": "M1_exact",
+      "query": "yuzhang-zhong/minecraft-style-video",
+      "requiredTerms": [
+        "yuzhang-zhong/minecraft-style-video"
+      ]
+    },
+    {
+      "id": "q03-m1_exact",
+      "method": "M1_exact",
+      "query": "voxel_spec.mjs mc_textures.mjs shot_compiler.mjs drift_check.mjs",
+      "requiredTerms": [
+        "voxel_spec.mjs",
+        "mc_textures.mjs",
+        "shot_compiler.mjs",
+        "drift_check.mjs"
+      ]
+    },
+    {
+      "id": "q04-m1_exact",
+      "method": "M1_exact",
+      "query": "diamond-creeper-ambush redstone-chain-asmr enderman-block-heist",
+      "requiredTerms": [
+        "diamond-creeper-ambush",
+        "redstone-chain-asmr",
+        "enderman-block-heist"
+      ]
+    },
+    {
+      "id": "q05-m2_en_symptom",
+      "method": "M2_en_symptom",
+      "query": "Sora or Kling gave Steve and Alex five human fingers and blurry textures",
+      "requiredTerms": [
+        "five human fingers",
+        "blurry textures",
+        "Steve",
+        "Alex"
+      ]
+    },
+    {
+      "id": "q06-m2_en_symptom",
+      "method": "M2_en_symptom",
+      "query": "stop AI video turning Minecraft pickaxe into smooth round metal sword or Lego studs",
+      "requiredTerms": [
+        "smooth round metal",
+        "Lego studs",
+        "pickaxe"
+      ]
+    },
+    {
+      "id": "q07-m2_en_symptom",
+      "method": "M2_en_symptom",
+      "query": "lock 8x8x8 head and 16x16x16 nearest-neighbor pixel grid in AI video",
+      "requiredTerms": [
+        "8x8x8",
+        "16x16x16",
+        "nearest-neighbor"
+      ]
+    },
+    {
+      "id": "q08-m2_en_symptom",
+      "method": "M2_en_symptom",
+      "query": "prevent voxel character drifting into Roblox SmoothPlastic rounded torso",
+      "requiredTerms": [
+        "Roblox",
+        "voxel",
+        "flat-square"
+      ]
+    },
+    {
+      "id": "q09-m3_zh_colloquial",
+      "method": "M3_zh_colloquial",
+      "query": "AI生成我的世界MC视频史蒂夫长出五根手指贴图模糊变乐高怎么解决",
+      "requiredTerms": [
+        "我的世界",
+        "MC",
+        "五指",
+        "乐高"
+      ]
+    },
+    {
+      "id": "q10-m3_zh_colloquial",
+      "method": "M3_zh_colloquial",
+      "query": "可灵即梦海螺通义万相生成9:16竖屏MC苦力怕挖矿红石ASMR短视频提示词",
+      "requiredTerms": [
+        "可灵",
+        "即梦",
+        "海螺",
+        "通义万相",
+        "9:16"
+      ]
+    },
+    {
+      "id": "q11-m3_zh_colloquial",
+      "method": "M3_zh_colloquial",
+      "query": "不用装Mine-imator或Blender在本地预览MC方块小人分镜动画",
+      "requiredTerms": [
+        "Mine-imator",
+        "Blender",
+        "分镜"
+      ]
+    },
+    {
+      "id": "q12-m3_zh_colloquial",
+      "method": "M3_zh_colloquial",
+      "query": "抖音B站小红书爆款我的世界Noob大战Pro与美西螈小屋短视频脚本",
+      "requiredTerms": [
+        "抖音",
+        "B站",
+        "小红书",
+        "Noob"
+      ]
+    },
+    {
+      "id": "q13-m4_alternative",
+      "method": "M4_alternative",
+      "query": "lightweight agent-native alternative to Mine-imator Blockbench or Replay Mod for 9:16 MC shorts",
+      "requiredTerms": [
+        "Mine-imator",
+        "Blockbench",
+        "Replay Mod",
+        "9:16"
+      ]
+    },
+    {
+      "id": "q14-m4_alternative",
+      "method": "M4_alternative",
+      "query": "offline zero-API-key 3D voxel MP4 and GIF storyboard animatic generator",
+      "requiredTerms": [
+        "zero video-model API keys",
+        "MP4",
+        "GIF",
+        "Node.js 18+"
+      ]
+    },
+    {
+      "id": "q15-m4_alternative",
+      "method": "M4_alternative",
+      "query": "anti-drift voxel prompt compiler vs raw text-to-video Minecraft prompts",
+      "requiredTerms": [
+        "drift_check.mjs",
+        "anti-drift",
+        "voxel"
+      ]
+    },
+    {
+      "id": "q16-m4_alternative",
+      "method": "M4_alternative",
+      "query": "Mine-imator与Blockbench之外免安装生成MC竖屏动画预演的开源工具",
+      "requiredTerms": [
+        "Mine-imator",
+        "Blockbench",
+        "免安装"
+      ]
+    },
+    {
+      "id": "q17-m5_tech_stack",
+      "method": "M5_tech_stack",
+      "query": "8x8x8 head 8x12x4 torso 4x12x4 Steve 3x12x4 Alex +0.5px skin layer",
+      "requiredTerms": [
+        "8x8x8",
+        "8x12x4",
+        "4x12x4",
+        "3x12x4",
+        "+0.5px"
+      ]
+    },
+    {
+      "id": "q18-m5_tech_stack",
+      "method": "M5_tech_stack",
+      "query": "16x16x1 extruded pixel-art diamond sword and pickaxe geometry",
+      "requiredTerms": [
+        "16x16x1",
+        "pickaxe",
+        "sword"
+      ]
+    },
+    {
+      "id": "q19-m5_tech_stack",
+      "method": "M5_tech_stack",
+      "query": "zero npm dependencies Node.js 18+ offline 3D voxel renderer",
+      "requiredTerms": [
+        "Node.js 18+",
+        "zero",
+        "render_preview.mjs"
+      ]
+    },
+    {
+      "id": "q20-m5_tech_stack",
+      "method": "M5_tech_stack",
+      "query": "BSL Complementary nostalgia shader lighting prompts for Kling Seedance Sora Runway",
+      "requiredTerms": [
+        "Kling",
+        "Seedance",
+        "Sora",
+        "Runway",
+        "shader"
+      ]
+    },
+    {
+      "id": "q21-m6_agent_workflow",
+      "method": "M6_agent_workflow",
+      "query": "gh skill install minecraft-style-video Claude Code Copilot Codex Cursor",
+      "requiredTerms": [
+        "gh skill install yuzhang-zhong/minecraft-style-video",
+        "Claude Code",
+        "GitHub Copilot",
+        "Codex",
+        "Cursor"
+      ]
+    },
+    {
+      "id": "q22-m6_agent_workflow",
+      "method": "M6_agent_workflow",
+      "query": "npx skills add minecraft-style-video Gemini CLI Pi",
+      "requiredTerms": [
+        "npx skills add https://github.com/yuzhang-zhong/minecraft-style-video",
+        "Gemini CLI",
+        "Pi"
+      ]
+    },
+    {
+      "id": "q23-m6_agent_workflow",
+      "method": "M6_agent_workflow",
+      "query": "Agent Plugins v1.0.0 plugin.json for Minecraft voxel video generation",
+      "requiredTerms": [
+        "plugin.json",
+        "minecraft-style-video"
+      ]
+    },
+    {
+      "id": "q24-m6_agent_workflow",
+      "method": "M6_agent_workflow",
+      "query": "CLI command node scripts/shot_compiler.mjs --template diamond-creeper-ambush",
+      "requiredTerms": [
+        "node scripts/shot_compiler.mjs",
+        "diamond-creeper-ambush"
+      ]
+    },
+    {
+      "id": "q25-m7_llm_chat",
+      "method": "M7_llm_chat",
+      "query": "What open-source Agent Skill generates 9:16 Minecraft voxel shorts for TikTok and YouTube Shorts?",
+      "requiredTerms": [
+        "TikTok",
+        "YouTube Shorts",
+        "9:16",
+        "Minecraft"
+      ]
+    },
+    {
+      "id": "q26-m7_llm_chat",
+      "method": "M7_llm_chat",
+      "query": "How do I keep Creeper Enderman and Axolotl voxel proportions consistent in Kling or Sora?",
+      "requiredTerms": [
+        "Creeper",
+        "Enderman",
+        "Axolotl",
+        "Kling",
+        "Sora"
+      ]
+    },
+    {
+      "id": "q27-m7_llm_chat",
+      "method": "M7_llm_chat",
+      "query": "有没有支持Claude Code的我的世界像素方块人短视频生成与防崩坏Skill",
+      "requiredTerms": [
+        "我的世界",
+        "像素方块",
+        "Claude Code",
+        "Agent Skill"
+      ]
+    },
+    {
+      "id": "q28-m7_llm_chat",
+      "method": "M7_llm_chat",
+      "query": "怎么用AI在投流生成视频前免费离线渲染MC四镜分镜预演MP4",
+      "requiredTerms": [
+        "MP4",
+        "分镜",
+        "离线"
+      ]
+    },
+    {
+      "id": "q29-m8_persona_longtail",
+      "method": "M8_persona_longtail",
+      "query": "Creeper mining ambush TNT blast Pro vs Noob build battle templates",
+      "requiredTerms": [
+        "Creeper",
+        "TNT",
+        "Pro vs. Noob"
+      ]
+    },
+    {
+      "id": "q30-m8_persona_longtail",
+      "method": "M8_persona_longtail",
+      "query": "Redstone piston ASMR loop Enderman block heist rainy pink Axolotl",
+      "requiredTerms": [
+        "Redstone",
+        "piston",
+        "ASMR",
+        "Enderman",
+        "Axolotl"
+      ]
+    },
+    {
+      "id": "q31-m8_persona_longtail",
+      "method": "M8_persona_longtail",
+      "query": "cozy lantern wooden cabin build 9:16 Minecraft machinima",
+      "requiredTerms": [
+        "cozy-lantern-build",
+        "machinima"
+      ]
+    },
+    {
+      "id": "q32-m8_persona_longtail",
+      "method": "M8_persona_longtail",
+      "query": "10-language Minecraft video skill README zh-TW ja ko es fr de pt-BR ru",
+      "requiredTerms": [
+        "README.zh-TW.md",
+        "README.ja.md",
+        "README.ko.md",
+        "README.es.md"
+      ]
+    }
+  ],
+  "requiredPaths": [
+    "skills/minecraft-style-video/SKILL.md",
+    "skills/minecraft-style-video/scripts/render_preview.mjs",
+    "llms.txt",
+    "CITATION.cff"
+  ],
+  "requiredInstallCommands": [
+    "gh skill install yuzhang-zhong/minecraft-style-video minecraft-style-video",
+    "npx skills add https://github.com/yuzhang-zhong/minecraft-style-video --skill minecraft-style-video"
+  ]
+}

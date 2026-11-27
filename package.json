@@ -40,9 +40,13 @@
     "render": "node scripts/render_preview.mjs",
     "sync:skill": "node scripts/sync_skill_bundle.mjs",
     "validate": "node scripts/validate_skill.mjs",
-    "test": "node --test tests/run_tests.mjs"
+    "test": "node --test tests/run_tests.mjs",
+    "test:discovery": "node scripts/discovery_audit.mjs",
+    "test:discovery:remote": "node scripts/discovery_audit.mjs --remote"
   },
   "pi": {
-    "skills": ["./skills/minecraft-style-video"]
+    "skills": [
+      "./skills/minecraft-style-video"
+    ]
   }
 }

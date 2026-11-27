@@ -11,16 +11,25 @@
   "repository": "https://github.com/yuzhang-zhong/minecraft-style-video",
   "license": "MIT",
   "keywords": [
+    "agent-skills",
+    "agent-skill",
+    "claude-skill",
+    "copilot-skill",
+    "codex-skill",
+    "cursor-skill",
     "minecraft",
     "minecraft-video",
     "voxel",
+    "voxel-art",
     "ai-video",
     "video-generation",
     "short-video",
     "storyboard",
     "blockbench",
+    "mine-imator",
     "kling",
     "seedance",
+    "wan",
     "sora"
   ]
 }

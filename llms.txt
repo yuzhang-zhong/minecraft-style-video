@@ -26,3 +26,8 @@ node scripts/shot_compiler.mjs --template diamond-creeper-ambush --duration 15 -
 - [README (English)](README.md) · [README (简体中文)](README.zh-CN.md)
 - [Voxel Geometry & Shaders](references/voxel-geometry-blocks-and-shaders.md)
 - [Anti-Drift Rescue Rules](references/rescue-and-anti-drift.md)
+
+## Multi-Angle Search & Slang Mapping
+- **Exact & Manifests**: `minecraft-style-video`, `plugin.json` (Agent Plugins v1.0.0), `voxel_spec.mjs`, `mc_textures.mjs`, `shot_compiler.mjs`, `drift_check.mjs`, `render_preview.mjs`.
+- **Pain-Point / Symptom**: Fixes Sora, Kling (可灵), Seedance/Jimeng (即梦), Hailuo (海螺), Wan (通义万相), and Runway defects where Steve/Alex grow five human fingers (`五指`), textures turn blurry, pickaxes/swords turn into smooth round metal, or blocks sprout Lego studs (`乐高凸点`) or Roblox rounded limbs.
+- **Alternative-To**: Lightweight免安装 (zero-install, zero-API-key) 9:16 voxel storyboard & 3D MP4/GIF animatic previsualization alternative to **Mine-imator**, **Blockbench**, **Blender**, or **Replay Mod** for **TikTok, YouTube Shorts, Douyin (抖音), Bilibili (B站), and Xiaohongshu (小红书)** Minecraft creators (`Pro vs. Noob`, `Redstone ASMR`, `Creeper`, `Enderman`, `Axolotl`, BSL/Complementary shader prompts, 10-language `docs/i18n/README.*.md` guides).
