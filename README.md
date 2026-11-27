@@ -4,7 +4,8 @@
 
 # Minecraft Style Video
 
-Plan 9:16 Minecraft voxel shorts: lock `8x8x8` character and `16x16x16` block proportions, compile shot-by-shot prompts, and preview the motion locally.
+An Agent Skill and offline 3D CLI tool to plan 9:16 vertical Minecraft voxel character & block short videos: lock `8x8x8` character and `16x16x16` block pixel proportions, compile shot-by-shot storyboard prompts for Kling, Seedance, Hailuo, Wan, Sora, or Runway without human-finger drift, and preview 3D animations locally.<br>
+《我的世界》（MC）方块小人 9:16 竖屏短视频分镜、本地 3D 动画预览与可灵 / 即梦防崩坏提示词 AI Agent Skill。
 
 [![Agent Skill](https://img.shields.io/badge/Skill-SKILL.md-10b981?style=flat-square)](SKILL.md)
 [![Node.js 18+ for the CLI](https://img.shields.io/badge/Node.js-18%2B-268354?style=flat-square)](#quick-start)
