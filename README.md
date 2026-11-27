@@ -109,7 +109,7 @@ Before running multi-shot image-to-video (I2V), lock the character and block pro
 
 ## 中文简介
 
-`minecraft-style-video` 是面向 Claude Code、Codex、GitHub Copilot 与 Cursor 的**《我的世界》（Minecraft）体素短视频 Agent Skill 与零依赖 Node.js CLI 工具包**。它在生成前锁定 `8×8×8` 像素方块头、`8×12×4` 躯干、`4×4` 无手指平头方块手、`16×16×16` 像素方块与 `16×16×1` 挤出式像素钻石镐/剑几何不变量，支持本地离线渲染 9:16 竖屏 3D 动态分镜预览（MP4 / GIF / 三视图设定卡），并为可灵（Kling）、即梦（Seedance）、海螺（Hailuo）、通义万相（Wan）、Sora 与 Runway 编译图生视频（I2V）/ 文生视频（T2V）提示词及五指/圆滑金属反漂移修复补丁。详见[简体中文说明](README.zh-CN.md)。
+`minecraft-style-video` 是面向 Claude Code、Codex、GitHub Copilot 与 Cursor 的**《我的世界》（Minecraft）体素短视频 Agent Skill 与零依赖 Node.js CLI 工具包**。它在生成前锁定 `8×8×8` 像素方块头、`8×12×4` 躯干、`4×4` 无手指平头方块手、`16×16×16` 像素方块与 `16×16×1` 挤出式像素钻石镐/剑几何不变量，支持本地离线渲染 9:16 竖屏 3D 动态分镜预览（MP4 / GIF / 三视图设定卡），并为可灵（Kling）、即梦（Seedance）、海螺（Hailuo）、通义万相（Wan）、Sora 与 Runway 编译图生视频（I2V）/ 文生视频（T2V）提示词及五指/圆滑金属反漂移修复补丁。覆盖矿洞挖钻石遇苦力怕、末影人偷草块、红石活塞解压 ASMR、微缩木屋与粉美西螈等场景，无需 Blockbench 手动 K 帧，解决史蒂夫长五根真手指、钻石剑变圆铁棍与像素贴图模糊问题。详见[简体中文说明](README.zh-CN.md)与 [`llms.txt`](llms.txt)。
 
 ## Languages
 

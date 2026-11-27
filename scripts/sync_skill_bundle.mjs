@@ -8,6 +8,10 @@ const ROOT = path.resolve(__dirname, "..");
 const BUNDLE_ROOT = path.join(ROOT, "skills", "minecraft-style-video");
 const STAGING_ROOT = path.join(ROOT, "skills", ".minecraft-style-video.tmp");
 
+export function normalizeRelativePath(relativePath) {
+  return relativePath.replaceAll("\\", "/");
+}
+
 function walkFiles(relativeDirectory) {
   const absoluteDirectory = path.join(ROOT, relativeDirectory);
   const files = [];
@@ -36,7 +40,9 @@ export const BUNDLE_FILES = [
   "scripts/drift_check.mjs",
   "scripts/mc_textures.mjs",
   "scripts/render_preview.mjs"
-].sort();
+]
+  .map(normalizeRelativePath)
+  .sort();
 
 export function syncSkillBundle() {
   fs.rmSync(STAGING_ROOT, { recursive: true, force: true });

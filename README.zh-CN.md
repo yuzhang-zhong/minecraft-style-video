@@ -16,6 +16,8 @@
 
 </div>
 
+> **一句话速览：** `minecraft-style-video` 是可一键安装的《我的世界》（MC）体素短视频 Agent Skill 与零依赖 Node.js 本地 3D 预览工具：无需视频平台账号或 API Key，即可渲染 9:16 竖屏本地 MP4/GIF 动态分镜（挖矿遇苦力怕、末影人偷草块、红石活塞解压 ASMR、微缩木屋与美西螈等），锁死 `8×8×8` 小人与 `16×16×16` 像素比例，防止可灵、即梦、海螺、万相、Sora、Runway 把方块手画成五根真手指、把钻石剑磨成圆铁棍或把像素贴图糊成一片。
+
 [![四组同步播放的 9:16 我的世界体素短片预览：矿洞挖钻石遇苦力怕、微缩木屋点亮灯笼、钻石甲大佬与萌新 TNT、末影人半夜偷草方块](assets/showcase/minecraft_shorts_reel.gif)](assets/showcase/minecraft_shorts_reel.mp4)
 
 ## 短片动画示例
@@ -86,6 +88,12 @@ node scripts/drift_check.mjs --prompt "A cute Minecraft boy holding a round meta
 | [`render_preview.mjs`](scripts/render_preview.mjs) | 本地渲染 3D 三视图、分镜表、方块循环动效、GIF 和 MP4（Windows 合成使用 PowerShell `System.Drawing` 与 `ffmpeg`）。 |
 
 [Skill 指南 (`SKILL.md`)](skills/minecraft-style-video/SKILL.md) · [体素比例、方块与光影规范](references/voxel-geometry-blocks-and-shaders.md) · [各模型提示词手册](references/model-prompt-playbook.md) · [跑偏诊断与修补](references/rescue-and-anti-drift.md) · [竖屏节奏与原版音效](references/short-video-beats-and-audio.md) · [六套短片与建造模板](references/viral-archetypes-catalog.md) · [预设参数目录](references/classic-minecraft-catalog.md)
+
+## 常见问题
+
+- **这只是一份静态提示词模板吗？** 不是。仓库自带四个零依赖 Node.js 脚本，先锁定 `8×8×8` / `16×16×16` 体素比例、自动拦截五根手指与圆滑金属等串味提示词，并在本地渲染 3D `.mp4` / `.gif` 动态分镜和三视图设定卡。
+- **如何一键安装到 Claude Code、Codex、GitHub Copilot 或 Cursor？** 运行 `gh skill install yuzhang-zhong/minecraft-style-video minecraft-style-video` 或 `npx skills add https://github.com/yuzhang-zhong/minecraft-style-video --skill minecraft-style-video`。
+- **本地运行需要视频平台 API Key 或 `npm install` 吗？** 均不需要，Node.js 18+ 标准库即可直接运行全部规划与检查命令。
 
 ## 语言
 
