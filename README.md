@@ -89,6 +89,10 @@ Before running multi-shot image-to-video (I2V), lock the character and block pro
 
 [Skill guide (`SKILL.md`)](SKILL.md) · [Voxel geometry, blocks, and shaders](references/voxel-geometry-blocks-and-shaders.md) · [Model prompt playbook](references/model-prompt-playbook.md) · [Drift fixes](references/rescue-and-anti-drift.md) · [Pacing and audio](references/short-video-beats-and-audio.md) · [Story and build templates](references/viral-archetypes-catalog.md) · [Preset catalog](references/classic-minecraft-catalog.md)
 
+## 中文简介
+
+`minecraft-style-video` 是面向 Claude Code、Codex、GitHub Copilot 与 Cursor 的**《我的世界》（Minecraft）体素短视频 Agent Skill 与零依赖 Node.js CLI 工具包**。它在生成前锁定 `8×8×8` 像素方块头、`8×12×4` 躯干、`4×4` 无手指平头方块手、`16×16×16` 像素方块与 `16×16×1` 挤出式像素钻石镐/剑几何不变量，支持本地离线渲染 9:16 竖屏 3D 动态分镜预览（MP4 / GIF / 三视图设定卡），并为可灵（Kling）、即梦（Seedance）、海螺（Hailuo）、通义万相（Wan）、Sora 与 Runway 编译图生视频（I2V）/ 文生视频（T2V）提示词及五指/圆滑金属反漂移修复补丁。详见[简体中文说明](README.zh-CN.md)。
+
 ## Languages
 
 Agent replies and CLI `--lang` output support `en`, `zh`, `zh-tw`, `ja`, `ko`, `es`, `fr`, `de`, `pt`, and `ru`.

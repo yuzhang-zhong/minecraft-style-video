@@ -2,7 +2,7 @@
 name: minecraft-style-video
 description: |
   Generate Minecraft-style voxel character, mob, and block short videos with locked 8x8x8/16x16x16 pixel-grid geometry, 9:16 storyboards, and model-specific prompts.
-  Use when the user wants to generate Minecraft-style character or object videos, voxel block/item/mob shorts, Douyin/Xiaohongshu/TikTok Minecraft skits, isometric voxel builds, Steve/Alex/Creeper/Enderman turnaround sheets, or prompts for Kling (可灵), Seedance/Jimeng (即梦), Hailuo MiniMax (海螺), Wan (通义万相), Sora, or Runway, or when fixing AI video defects such as human fingers, blurry textures, Roblox cylindrical heads, Lego studs/C-claws, smooth metal tools, or rubbery limbs.
+  Use when the user wants to generate Minecraft-style character or object videos, voxel block/item/mob shorts, Douyin/Xiaohongshu/TikTok Minecraft skits, isometric voxel builds, Steve/Alex/Creeper/Enderman turnaround sheets, or prompts for Kling (可灵), Seedance/Jimeng (即梦), Hailuo MiniMax (海螺), Wan (通义万相), Sora, or Runway, or when fixing AI video defects such as human fingers, blurry textures, Roblox cylindrical heads, Lego studs/C-claws, smooth metal tools, or rubbery limbs. 适用于《我的世界》MC体素方块小人短视频、竖屏动画分镜脚本、本地3D预览与防崩坏提示词生成。
 license: MIT
 metadata:
   version: "1.3.0"
